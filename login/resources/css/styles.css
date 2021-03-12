@@ -1,0 +1,16 @@
+.egi-logo {
+    background-image: url('../img/egi.png');
+}
+
+.grnet-logo {
+    background-image: url('../img/grnet.png');
+}
+
+.logo {
+	background-repeat: no-repeat;
+    background-size: cover;
+	background-position: center;
+    width: 10%;
+    height: 100%;
+    font: normal normal normal 14px/1 FontAwesome;
+}
