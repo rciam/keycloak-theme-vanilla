@@ -1,0 +1,8 @@
+{
+    "themes": [
+        {
+            "name" : "light-login",
+            "types": [ "login" ]
+        }
+    ]
+}
