@@ -2,7 +2,7 @@
 
 This is a custom theme for eosc-kc installations
 
-##Installation instructions:
+## Installation instructions:
 
 Create the following folders:
 $KEYCLOAK_BASE/modules/system/layers/keycloak/org/keycloak/keycloak-theme-vanilla
