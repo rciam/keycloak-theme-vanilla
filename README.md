@@ -29,7 +29,7 @@ Find the ```<subsystem xmlns="urn:jboss:domain:keycloak-server:1.1">``` node.
 
 * Add the 
 ```<provider>module:org.keycloak.keycloak-theme-vanilla</provider>```
-into the <providers> list
+into the ```<providers>``` list
 * Add the 
     ```
     <modules>
