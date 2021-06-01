@@ -46,11 +46,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class IdpResourceProvider implements RealmResourceProvider {
+public class ThemeResourceProvider implements RealmResourceProvider {
 
     private KeycloakSession session;
 
-    public IdpResourceProvider(KeycloakSession session) {
+    public ThemeResourceProvider(KeycloakSession session) {
         this.session = session;
     }
 

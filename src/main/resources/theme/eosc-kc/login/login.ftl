@@ -48,7 +48,7 @@
             }
 
             function getIdps() {
-                $http({method: 'GET', url: baseUri + 'realms/' + realm + '/login-info/identity-providers', params : $scope.fetchParams })
+                $http({method: 'GET', url: baseUri + 'realms/' + realm + '/theme-info/identity-providers', params : $scope.fetchParams })
                     .then(
                         function(success) {
                             if(Array.isArray(success.data)) {
@@ -68,7 +68,7 @@
             }
 
             function getPromotedIdps() {
-                $http({method: 'GET', url: baseUri + 'realms/' + realm + '/login-info/identity-providers-promoted' })
+                $http({method: 'GET', url: baseUri + 'realms/' + realm + '/theme-info/identity-providers-promoted' })
                     .then(
                         function(success) {
                             success.data.forEach(function(idp) {

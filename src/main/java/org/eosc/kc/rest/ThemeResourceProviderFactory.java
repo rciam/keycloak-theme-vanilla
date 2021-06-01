@@ -23,9 +23,9 @@ import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.services.resource.RealmResourceProviderFactory;
 
-public class IdpResourceProviderFactory implements RealmResourceProviderFactory {
+public class ThemeResourceProviderFactory implements RealmResourceProviderFactory {
 
-    public static final String ID = "login-info";
+    public static final String ID = "theme-info";
 
     @Override
     public String getId() {
@@ -34,7 +34,7 @@ public class IdpResourceProviderFactory implements RealmResourceProviderFactory 
 
     @Override
     public RealmResourceProvider create(KeycloakSession session) {
-        return new IdpResourceProvider(session);
+        return new ThemeResourceProvider(session);
     }
 
     @Override
