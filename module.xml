@@ -3,7 +3,7 @@
 <module xmlns="urn:jboss:module:1.3" name="org.keycloak.keycloak-theme-vanilla">
 
     <resources>
-        <resource-root path="keycloak-theme-vanilla"/>
+        <resource-root path="keycloak-theme-vanilla.jar"/>
     </resources>
 
     <dependencies>

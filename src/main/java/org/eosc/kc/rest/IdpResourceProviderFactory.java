@@ -25,7 +25,7 @@ import org.keycloak.services.resource.RealmResourceProviderFactory;
 
 public class IdpResourceProviderFactory implements RealmResourceProviderFactory {
 
-    public static final String ID = "identity-providers-loginpage";
+    public static final String ID = "login-info";
 
     @Override
     public String getId() {

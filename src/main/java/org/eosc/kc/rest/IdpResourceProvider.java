@@ -17,14 +17,12 @@
 
 package org.eosc.kc.rest;
 
-import org.jboss.resteasy.annotations.cache.NoCache;
-import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
-import org.keycloak.forms.login.freemarker.LoginFormsUtil;
 import org.keycloak.forms.login.freemarker.model.IdentityProviderBean;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.managers.RealmManager;
 import org.keycloak.services.resource.RealmResourceProvider;
@@ -41,9 +39,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -61,18 +60,19 @@ public class IdpResourceProvider implements RealmResourceProvider {
     }
 
     @Override
-        public void close() {
+    public void close() {
     }
+
+
 
     /**
      * This should be used from login pages to show all available identity providers of the realm for logging in.
      * It has to be a public endpoint.
      */
     @GET
-    @Path("{realm}/identity-providers")
+    @Path("/identity-providers")
     @Produces(MediaType.APPLICATION_JSON)
     public List<IdentityProviderBean.IdentityProvider> getIdentityProviders(
-            @PathParam("realm") String realmName,
             @QueryParam("keyword") @DefaultValue("") String keyword,
             @QueryParam("first") @DefaultValue("0") Integer firstResult,
             @QueryParam("max") @DefaultValue("2147483647") Integer maxResults,
@@ -82,7 +82,7 @@ public class IdpResourceProvider implements RealmResourceProvider {
     ) {
         if(firstResult < 0 || maxResults < 0)
             throw new BadRequestException("Should specify params firstResult and maxResults to be >= 0");
-        RealmModel realm = init(realmName);
+        RealmModel realm = session.getContext().getRealm();
         final String lowercaseKeyword = keyword.toLowerCase();
         List<IdentityProviderModel> identityProviders = realm.getIdentityProvidersStream()
                 .filter(idp -> {
@@ -113,12 +113,12 @@ public class IdpResourceProvider implements RealmResourceProvider {
      * It has to be a public endpoint.
      */
     @GET
-    @Path("{realm}/identity-providers-promoted")
+    @Path("/identity-providers-promoted")
     @Produces(MediaType.APPLICATION_JSON)
     public List<IdentityProviderBean.IdentityProvider> getPromotedIdentityProviders(
             @PathParam("realm") String realmName
     ) {
-        RealmModel realm = init(realmName);
+        RealmModel realm = session.getContext().getRealm();
         List<IdentityProviderModel> promotedProviders = new ArrayList<>();
         realm.getIdentityProvidersStream().forEach(idp -> {
             if(idp.getConfig()!=null && "true".equals(idp.getConfig().get("specialLoginbutton")))
@@ -129,18 +129,6 @@ public class IdpResourceProvider implements RealmResourceProvider {
         IdentityProviderBean idpBean = new IdentityProviderBean(realm, session, promotedProviders, URI.create(""));
         return idpBean.getProviders()!=null ? idpBean.getProviders() : new ArrayList<>();
 
-    }
-
-
-
-    private RealmModel init(String realmName) {
-        RealmManager realmManager = new RealmManager(session);
-        RealmModel realm = realmManager.getRealmByName(realmName);
-        if (realm == null) {
-            throw new NotFoundException("Realm does not exist");
-        }
-        session.getContext().setRealm(realm);
-        return realm;
     }
 
 
@@ -165,6 +153,7 @@ public class IdpResourceProvider implements RealmResourceProvider {
 
         return (List)providers.collect(Collectors.toList());
     }
+
 
 
 }
