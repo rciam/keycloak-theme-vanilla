@@ -121,7 +121,7 @@ public class ThemeResourceProvider implements RealmResourceProvider {
         RealmModel realm = session.getContext().getRealm();
         List<IdentityProviderModel> promotedProviders = new ArrayList<>();
         realm.getIdentityProvidersStream().forEach(idp -> {
-            if(idp.getConfig()!=null && "true".equals(idp.getConfig().get("specialLoginbutton")))
+            if(idp.getConfig()!=null && "true".equals(idp.getConfig().get("promotedLoginbutton")))
                 promotedProviders.add(idp);
         });
 
