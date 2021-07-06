@@ -10,7 +10,7 @@ $KEYCLOAK_BASE/modules/system/layers/keycloak/org/keycloak/keycloak-theme-vanill
 
 and add into the folder "main" 
 * the built jar keycloak-theme-vanilla/target/keycloak-theme-vanilla.jar
-* the keycloak-theme-vanilla/module.xml from the 
+* the keycloak-theme-vanilla/module.xml from the source (this one) base folder
 
 so you should end up with the following structure in
 $KEYCLOAK_BASE/modules/system/layers/keycloak/org/keycloak/keycloak-theme-vanilla
