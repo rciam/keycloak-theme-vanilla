@@ -6,6 +6,14 @@
     background-image: url('../img/grnet.png');
 }
 
+.orcid-logo {
+    background-image: url('https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png');
+}
+
+.synthesys-plus-logo {
+    background-image: url('../img/edugain.png');
+}
+
 .logo {
 	background-repeat: no-repeat;
     background-size: cover;
@@ -13,4 +21,12 @@
     width: 10%;
     height: 100%;
     font: normal normal normal 14px/1 FontAwesome;
+}
+
+div.kc-logo-text {
+    background-image: url(https://synthesys.rciam.grnet.gr/proxy/module.php/themevanilla/resources/images/logo.png);
+    background-repeat: no-repeat;
+    height: 80px;
+    width: 380px;
+    margin: 0 auto;
 }
