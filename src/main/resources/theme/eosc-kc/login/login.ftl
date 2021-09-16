@@ -125,6 +125,7 @@
         ${msg("loginAccountTitle")}
     <#elseif section = "form">
     <div id="kc-form">
+<#--
       <div id="kc-form-wrapper">
         <#if realm.password>
             <form id="kc-form-login" onsubmit="login.disabled = true; return true;" action="${url.loginAction}" method="post">
@@ -183,7 +184,7 @@
             </form>
         </#if>
       </div>
-
+-->
 
 
       <div ng-app="angularLoginPart" ng-controller="idpListing">
@@ -204,9 +205,10 @@
             </ul>
         </div>
         <div ng-if="(idps!=null && idps.length>0) || fetchParams.keyword!=null" id="kc-social-providers" class="${properties.kcFormSocialAccountSectionClass!}">
+<#--
             <hr/>
             <h4>${msg("identity-provider-login-label")}</h4>
-
+-->
             <div ng-if="(idps.length>=fetchParams.max && fetchParams.keyword==null) || fetchParams.keyword!=null">
                 <input id="kc-providers-filter" type="text" placeholder="Search..." ng-model="fetchParams.keyword" ng-keypress="applySearch($event)">
                 <i class="fa fa-search" id="kc-providers-filter-button" data-ng-click="applySearch(null)"> </i>
