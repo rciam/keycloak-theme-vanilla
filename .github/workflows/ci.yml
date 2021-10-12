@@ -17,4 +17,5 @@ jobs:
         with:
           name: Package
           path: staging
+          retention-days: 730
       
