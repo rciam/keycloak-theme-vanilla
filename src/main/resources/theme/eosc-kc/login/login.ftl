@@ -81,11 +81,24 @@
                     );
             }
 
+            function getConfigAndApply() {
+                $http({method: 'GET', url: baseUri + 'realms/' + realm + '/theme-info/theme-config' })
+                    .then(
+                        function(success) {
+                            var projectLogoIconUrl = success.data['projectLogoIconUrl'];
+                            var r = document.querySelector(':root');
+                            r.style.setProperty('--logo-image', 'url(projectLogoIconUrl)');
+                        },
+                        function(error){
+                        }
+                    );
+            }
 
             getIdps();
 
             getPromotedIdps();
 
+            getConfigAndApply();
 
 
             $scope.scrollCallback = function ($event, $direct) {

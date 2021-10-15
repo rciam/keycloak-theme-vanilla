@@ -17,6 +17,7 @@
 
 package org.eosc.kc.rest;
 
+import org.eosc.kc.resolver.ThemeConfig;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.forms.login.freemarker.model.IdentityProviderBean;
 import org.keycloak.models.IdentityProviderModel;
@@ -37,6 +38,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,9 +51,12 @@ import java.util.stream.Stream;
 public class ThemeResourceProvider implements RealmResourceProvider {
 
     private KeycloakSession session;
+    private static ThemeConfig themeConfig;
 
-    public ThemeResourceProvider(KeycloakSession session) {
+    public ThemeResourceProvider(KeycloakSession session) throws IOException {
         this.session = session;
+        if(themeConfig==null)
+            themeConfig = new ThemeConfig();
     }
 
     @Override
@@ -63,6 +68,13 @@ public class ThemeResourceProvider implements RealmResourceProvider {
     public void close() {
     }
 
+
+    @GET
+    @Path("/theme-config")
+    @Produces(MediaType.APPLICATION_JSON )
+    public Map<String,String> getThemeConfig(){
+        return themeConfig.getConfig();
+    }
 
 
     /**

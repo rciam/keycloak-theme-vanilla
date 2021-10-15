@@ -24,11 +24,15 @@
 }
 
 div.kc-logo-text {
-    background-image: url(https://synthesys.rciam.grnet.gr/proxy/module.php/themevanilla/resources/images/logo.png);
-    height: 80px;
-    width: 380px;
+    background-image: var(--logo-image);
+    height: 100px;
+    width: 210px;
 }
 
 .login-pf body {
     background: whitesmoke !important;
+}
+
+:root {
+  --logo-image: url('');
 }
