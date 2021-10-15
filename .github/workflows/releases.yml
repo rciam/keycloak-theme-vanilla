@@ -35,8 +35,10 @@ jobs:
       - name: Build with Maven
         run: cd theme && mvn --batch-mode --update-snapshots verify
 
-      - name: Zip file into a specific archive
-        run: zip -j target/build.zip target/*jar
+#      - name: Zip file into a specific archive
+#        run: zip -j theme/target/build.zip theme/target/*jar
+      - name: Rename jar file
+        run: mv theme/target/*jar theme/target/keycloak-theme-vanilla.jar
 
       - name: Create Release
         id: create_release
@@ -56,6 +58,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./target/build.zip
-          asset_name: keycloak-theme-vanilla-dissco.zip
-          asset_content_type: application/zip
+          asset_path: theme/target/keycloak-theme-vanilla.jar
+          asset_name: keycloak-theme-vanilla.jar
+          asset_content_type: application/java-archive
