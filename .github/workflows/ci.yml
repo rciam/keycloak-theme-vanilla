@@ -28,6 +28,12 @@ jobs:
       - name: Override (copy) additional resources
         run: cp -r override/additional theme/src/main/resources/
 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: workspace
+          path: ./
+          retention-days: 1
+
       - name: Build with Maven
         run: cd theme && mvn --batch-mode --update-snapshots verify
 
