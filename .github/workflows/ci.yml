@@ -4,17 +4,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
       - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:
           java-version: '8'
           distribution: 'adopt'
+      #checkout vanilla theme from master
+      - uses: actions/checkout@v2
+        with:
+          ref: "master"
+          path: theme
+      #checkout also this branch
+      - uses: actions/checkout@v2
+        with:
+          path: override
+      - name: Override (copy) configuration
+        run: cp override/configuration.json theme/src/main/resources/configuration.json
       - name: Build with Maven
-        run: mvn --batch-mode --update-snapshots verify
-      - run: mkdir staging && cp target/*.jar staging
+        run: cd theme && mvn --batch-mode --update-snapshots verify
       - uses: actions/upload-artifact@v2
         with:
-          name: Package
-          path: staging
+          name: theme
+          path: ./theme
+          retention-days: 1
       
