@@ -87,7 +87,7 @@
                         function(success) {
                             var projectLogoIconUrl = success.data['projectLogoIconUrl'];
                             var r = document.querySelector(':root');
-                            r.style.setProperty('--logo-image', 'url(projectLogoIconUrl)');
+                            r.style.setProperty('--logo-image', 'url('+projectLogoIconUrl+')');
                         },
                         function(error){
                         }
