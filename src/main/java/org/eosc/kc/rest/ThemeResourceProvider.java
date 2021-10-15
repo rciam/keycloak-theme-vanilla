@@ -53,7 +53,7 @@ public class ThemeResourceProvider implements RealmResourceProvider {
     private KeycloakSession session;
     private static ThemeConfig themeConfig;
 
-    public ThemeResourceProvider(KeycloakSession session) throws IOException {
+    public ThemeResourceProvider(KeycloakSession session) {
         this.session = session;
         if(themeConfig==null)
             themeConfig = new ThemeConfig();

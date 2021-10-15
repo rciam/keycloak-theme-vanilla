@@ -2,6 +2,8 @@ package org.eosc.kc.resolver;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eosc.kc.rest.ThemeResourceProvider;
+import org.jboss.logging.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,11 +15,19 @@ import java.util.Map;
  */
 public class ThemeConfig {
 
+    private static final Logger logger = Logger.getLogger(ThemeConfig.class);
+
     private Map<String, String> config;
 
-    public ThemeConfig() throws IOException {
+    public ThemeConfig() {
         InputStream is = getClass().getClassLoader().getResourceAsStream("configuration.json");
-        config = new ObjectMapper().readValue(is, new TypeReference<HashMap<String, String>>() {});
+        try {
+            config = new ObjectMapper().readValue(is, new TypeReference<HashMap<String, String>>() {});
+        }
+        catch(IOException ex){
+            config = new HashMap<>();
+            logger.error("Could not fetch the keycloak-theme-vanilla specific config. Expect some problems if this theme is used", ex);
+        }
     }
 
     public String get(String configParam){
