@@ -1,6 +1,6 @@
 # keycloak-theme-vanilla
 
-This is a custom theme for eosc-kc installations
+This is a custom theme for rciam installations
 
 ## Installation instructions:
 
