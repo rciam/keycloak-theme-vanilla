@@ -49,8 +49,8 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload Release Asset
-        id: upload-release-asset
+      - name: Upload java archive
+        id: upload-release-asset-jar
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -59,3 +59,16 @@ jobs:
           asset_path: theme/target/keycloak-theme-vanilla.jar
           asset_name: keycloak-theme-vanilla.jar
           asset_content_type: application/java-archive
+          
+      - name: Upload module.xml
+        id: upload-release-asset-xml
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: module.xml
+          asset_name: module.xml
+          asset_content_type: application/xml
+      
+      
