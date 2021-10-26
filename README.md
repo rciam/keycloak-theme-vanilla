@@ -1,7 +1,17 @@
 # keycloak-theme-vanilla
 
-This is a custom theme for rciam installations
+This is a custom theme for rciam installations.
 
+#### NOTE:
+
+<span style="color:blue"> aaa</span>
+
+<span style="color:blue"> 
+**Master branch contains the base code (and a default template)**
+    
+**Any other branch inherits the master (builds the master) and applies the contained customizations.**
+</span>
+    
 ## Installation instructions:
 
 Create the following folders:
