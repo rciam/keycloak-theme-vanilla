@@ -34,8 +34,9 @@
 
 		angularLoginPart.controller("idpListing", function($scope, $http) {
 
+            var sessionParams = new URL(baseUri+idpLoginFullUrl).searchParams;
 
-            $scope.fetchParams = { 'keyword': null, 'first' : 0, 'max': 20 };
+            $scope.fetchParams = { 'keyword': null, 'first' : 0, 'max': 20, 'client_id': sessionParams.get('client_id'), 'tab_id': sessionParams.get('tab_id'), 'session_code': sessionParams.get('session_code')};
             $scope.idps = [];
             $scope.totalIdpsAskedFor = 0;
             $scope.reachedEndPage = false;
@@ -49,7 +50,7 @@
                     .then(
                         function(success) {
                             if(Array.isArray(success.data)) {
-                                success.data.forEach(idp => {
+                                success.data.forEach(function(idp) {
                                     setLoginUrl(idp);
                                     $scope.idps.push(idp);
                                 });
@@ -68,7 +69,9 @@
                 $http({method: 'GET', url: baseUri + 'realms/' + realm + '/theme-info/identity-providers-promoted' })
                     .then(
                         function(success) {
-                            success.data.forEach(idp => setLoginUrl(idp));
+                            success.data.forEach(function(idp) {
+                                setLoginUrl(idp);
+                            });
                             $scope.promotedIdps = success.data;
                         },
                         function(error){
@@ -76,11 +79,24 @@
                     );
             }
 
+            function getConfigAndApply() {
+                $http({method: 'GET', url: baseUri + 'realms/' + realm + '/theme-info/theme-config' })
+                    .then(
+                        function(success) {
+                            var projectLogoIconUrl = success.data['projectLogoIconUrl'];
+                            var r = document.querySelector(':root');
+                            r.style.setProperty('--logo-image', 'url('+projectLogoIconUrl+')');
+                        },
+                        function(error){
+                        }
+                    );
+            }
 
             getIdps();
 
             getPromotedIdps();
 
+            getConfigAndApply();
 
 
             $scope.scrollCallback = function ($event, $direct) {
