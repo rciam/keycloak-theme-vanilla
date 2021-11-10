@@ -12,7 +12,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <keycloak.version>13.0.0</keycloak.version>
+        <keycloak.version>15.0.2</keycloak.version>
     </properties>
 
     <organization>
