@@ -43,5 +43,16 @@ into the ```<providers>``` list
     ```
     into the ```<theme>``` block
 
+## Compatibility matrix
+
+|  Theme version | Keycloak version |
+|---|---|
+|  v1.0.0 | v15.0.2-r1.0.1+ |
+
+
+## License
+
+* [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+
 
 
