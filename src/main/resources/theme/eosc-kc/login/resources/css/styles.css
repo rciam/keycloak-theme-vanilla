@@ -1,27 +1,14 @@
-.egi-logo {
-    background-image: url('../img/egi.png');
+.fa-extend {
+    background-repeat: no-repeat !important;
+    background-position: 50% center;
+    background-size: 70%;
 }
 
-.grnet-logo {
-    background-image: url('../img/grnet.png');
-}
-
+/*
 .orcid-logo {
-    background-image: url('https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png');
+    background-image: url(../img/orcid-logo.png);
 }
-
-.synthesys-plus-logo {
-    background-image: url('../img/edugainlogo.png');
-}
-
-.logo {
-	background-repeat: no-repeat;
-    background-size: cover;
-	background-position: center;
-    width: 10%;
-    height: 100%;
-    font: normal normal normal 14px/1 FontAwesome;
-}
+*/
 
 div.kc-logo-text {
     background-image: var(--logo-image);
