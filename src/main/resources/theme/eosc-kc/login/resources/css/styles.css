@@ -23,25 +23,13 @@
     font: normal normal normal 14px/1 FontAwesome;
 }
 
-div.kc-logo-text {
-    background-image: var(--logo-image);
-    height: 100px;
-    width: 210px;
-}
 
 .login-pf body {
     background: whitesmoke !important;
 }
 
-:root {
-  --logo-image: url('');
-}
 
-.vertical-center {
-  margin: 0;
-  position: relative;
-  top: 50%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
+.horizontal-padding-10 {
+    padding-left:10px;
+    padding-right:10px;
 }
-

@@ -1,6 +1,6 @@
 {
-  "projectLogoIconUrl": ["../additional/logo.png"],
-  "footerIconUrl" : ["../additional/grnet.jpg","../additional/eu.png"],
+  "projectLogoIconUrl": ["additional/logo.png"],
+  "footerIconUrl" : ["additional/grnet.jpg","additional/eu.png"],
   "privacyPolicyUrl" : ["https://rciam.example.org/privacy"],
   "termsOfUseUrl" : ["https://rciam.example.org/aup"],
   "htmlFooterText" : ["Copyright &copy; 2021 | Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vitae pellentesque velit. Curabitur sit amet tristique eros, <a href='https://www.lipsum.com/feed/html'>eu accumsan nisi</a>. Pellentesque facilisis a diam pellentesque malesuada. Suspendisse potenti. <a href='https://grnet.gr'>GRNET s.a.</a>"]

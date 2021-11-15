@@ -11,13 +11,13 @@
         var baseUri = '${uriInfo.baseUri}';
         var idpLoginFullUrl = '${idpLoginFullUrl?no_esc}';
         var resourcesCommonPath = '${url.resourcesCommonPath}';
+        var resourcesPath = '${url.resourcesPath}';
     </script>
 
 
 	<script>
 
 		var angularLoginPart = angular.module("angularLoginPart", []);
-
 
         angularLoginPart.directive("onScroll", [function () {
             var previousScroll = 0;
@@ -86,7 +86,6 @@
                 $http({method: 'GET', url: baseUri + 'realms/' + realm + '/theme-info/theme-config' })
                     .then(
                         function(success) {
-                            moveFooterInPlace();
                             applyConfig(success.data);
                         },
                         function(error){
@@ -94,21 +93,16 @@
                     );
             }
 
+
+
             function applyConfig(config){
-
-//var scripts = document.getElementsByTagName("script");
-
-var scripts = document.getElementsByTagName("script"),
-    src = scripts[scripts.length-1].src;
-
-var src = scripts[scripts.length-1].src;
-debugger;
-
 
                 //set main logo (it's single config entry)
                 var projectLogoIconUrl = config['projectLogoIconUrl'][0];
-                var r = document.querySelector(':root');
-                r.style.setProperty('--logo-image', 'url('+projectLogoIconUrl+')');
+                var fullUrl = baseUri.replace("/auth/", "") + resourcesPath + "/" + projectLogoIconUrl;
+                var image = createElementFromHTML("<img src='" + fullUrl + "' alt='" + realm + "' style='max-height:100px; width:auto;'>")
+                var logoParentDiv = document.querySelector('#kc-header-wrapper');
+                logoParentDiv.appendChild(image);
 
                 //set footer icons/logos urls (multiple config entries)
                 var iconUrls = config['footerIconUrl'];
@@ -117,10 +111,10 @@ debugger;
                     for (let i = 0; i < iconUrls.length; i++) {
                         var iconUrl = iconUrls[i];
                         if(iconUrl != null && iconUrl.length > 0){
-                            var logoUrlElem = createElementFromHTML("<img src='" + iconUrl + "' style='max-height:50px; margin: auto;'></img>");
+                            var fullUrl = baseUri.replace("/auth/", "") + resourcesPath + "/" + iconUrl;
+                            var logoUrlElem = createElementFromHTML("<img src='" + fullUrl + "' style='max-height:50px; margin: auto;' class='horizontal-padding-10'></img>");
                             logosContainerElem.appendChild(logoUrlElem);
                         }
-
                     }
                 }
 
@@ -128,7 +122,7 @@ debugger;
                 var privacyPolicyUrl = config['privacyPolicyUrl'];
                 var linksContainerElem = document.querySelector('#footer-links-container');
                 if(privacyPolicyUrl != null && privacyPolicyUrl.length > 0 && privacyPolicyUrl[0].length > 0){
-                    var privacyProlicyElem = createElementFromHTML("<a href='" + privacyPolicyUrl[0] + "'>Privacy</a>");
+                    var privacyProlicyElem = createElementFromHTML("<a class='horizontal-padding-10' href='" + privacyPolicyUrl[0] + "'>Privacy</a>");
                     linksContainerElem.appendChild(privacyProlicyElem);
                 }
 
@@ -136,7 +130,7 @@ debugger;
                 var termsOfUseUrl = config['termsOfUseUrl'];
                 var linksContainerElem = document.querySelector('#footer-links-container');
                 if(termsOfUseUrl != null && termsOfUseUrl.length > 0 && termsOfUseUrl[0].length > 0){
-                    var termsOfUseElem = createElementFromHTML("<a href='" + termsOfUseUrl[0] + "'>Terms</a>");
+                    var termsOfUseElem = createElementFromHTML("<a class='horizontal-padding-10' href='" + termsOfUseUrl[0] + "'>Terms</a>");
                     linksContainerElem.appendChild(termsOfUseElem);
                 }
 
@@ -155,27 +149,20 @@ debugger;
             }
 
 
-            function moveFooterInPlace(){
-/*
-                var destContainer = document.getElementsByClassName("login-pf-page")[0].appendChild(fragment);
-                var destElem = createElementFromHTML("<div></div>");
-                var sourceElem = document.getElementById('footer');
-                destElem.innerHTML = sourceElem.innerHTML;
-                sourceElem.innerHTML = '';
-*/
+            function drawFooterInPlace(){
+                fetch(baseUri.replace("/auth/", "") + resourcesPath + "/elements/footer.html")
+                    .then((r)=>{r.text().then((d)=>{
+                        let element = createElementFromHTML(d);
+                        document.getElementsByClassName("login-pf-page")[0].appendChild(element);
+                        getConfig();
+                    })
+                });
+            }
 
-/*
-                var fragment = document.createDocumentFragment();
-                fragment.appendChild(document.getElementById('footer'));
-                document.getElementsByClassName("login-pf-page")[0].appendChild(fragment);
-*/
-
-
-                /*
-                var loginpage = document.getElementsByClassName("login-pf-page")[0];
-                var footer = createElementFromHTML("<div id='footer' style='left: 0; bottom: 0; width: 100%; margin-top:30px;'> </div> ");
-                loginpage.appendChild(footer);
-                */
+            function removeDefaultLogo() {
+                var logoParentDiv = document.querySelector('#kc-header-wrapper');
+                for(var i=0 ; i<logoParentDiv.childNodes.length; i++)
+                    logoParentDiv.childNodes[i].remove();
             }
 
 
@@ -183,7 +170,9 @@ debugger;
 
             getPromotedIdps();
 
-            getConfig();
+            removeDefaultLogo();
+
+            drawFooterInPlace();
 
 
             $scope.scrollCallback = function ($event, $direct) {
@@ -216,9 +205,7 @@ debugger;
 
     </script>
 
-
 <@layout.registrationLayout displayMessage=!messagesPerField.existsError('username','password') displayInfo=realm.password && realm.registrationAllowed && !registrationDisabled??; section>
-
     <#if section = "header">
         ${msg("loginAccountTitle")}
     <#elseif section = "form">
@@ -336,47 +323,5 @@ debugger;
         </#if>
     </#if>
     <div>
-
-    <#-- THIS IS THE FOOTER. SHOULD BE MOVED INTO THE CORRECT PLACE BY THE JAVASCRIPT CODE! -->
-    <div id="footer" style="left: 0; bottom: 0; width: 100%; margin-top:30px; padding:10px;">
-        <div class="row" style="width:100%;">
-            <div class="col-sm-4" >
-              <div class="float-left vertical-center">
-
-                <!--
-                <label for="lang">English</label>
-                <select name="lang" id="lang">
-                  <option value="volvo">English</option>
-                  <option value="saab">Greek</option>
-                </select>
-                -->
-
-              </div>
-            </div>
-            <div class="col-sm-4">
-              <div id="footer-logos-container" class="row" style="width:100%;">
-<#--
-                <img class="eu-logo" style="max-height:50px; margin: auto;"></img>
-                <img class="grnet-logo" style="max-height:50px; margin: auto;"></img>
--->
-              </div>
-            </div>
-            <div class="col-sm-4" >
-              <div id="footer-links-container" class="float-right vertical-center">
-<#--
-                <a href="https://en.wikipedia.org/wiki/Gecko">Terms</a>
-                <a href="https://en.wikipedia.org/wiki/Gecko">Privacy</a>
--->
-              </div>
-
-            </div>
-        </div>
-        <div class="row" style="margin-top:7px;">
-          <p id="footer-html-text" style="margin: auto;"></p>
-        </div>
-
-    </div>
-
-
 
 </@layout.registrationLayout>
