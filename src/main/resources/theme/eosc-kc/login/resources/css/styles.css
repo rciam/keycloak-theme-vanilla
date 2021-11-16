@@ -23,6 +23,9 @@
     font: normal normal normal 14px/1 FontAwesome;
 }
 
+.login-pf {
+    background: whitesmoke !important;
+}
 
 .login-pf body {
     background: whitesmoke !important;
