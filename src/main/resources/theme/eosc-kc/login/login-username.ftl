@@ -3,12 +3,15 @@
     <script src="${url.resourcesCommonPath}/node_modules/jquery/dist/jquery.min.js" type="text/javascript"></script>
     <script src="${url.resourcesCommonPath}/node_modules/angular/angular.min.js"></script>
 
+
     <script>
         var aClass = '${properties.kcFormSocialAccountListButtonClass!}'.split(" ");
         var iconClass = '${properties.kcCommonLogoIdP!}'.split(" ");
         var realm = '${realm.name}';
         var baseUri = '${uriInfo.baseUri}';
         var idpLoginFullUrl = '${idpLoginFullUrl?no_esc}';
+        var resourcesCommonPath = '${url.resourcesCommonPath}';
+        var resourcesPath = '${url.resourcesPath}';
     </script>
 
 
@@ -79,24 +82,97 @@
                     );
             }
 
-            function getConfigAndApply() {
+            function getConfig() {
                 $http({method: 'GET', url: baseUri + 'realms/' + realm + '/theme-info/theme-config' })
                     .then(
                         function(success) {
-                            var projectLogoIconUrl = success.data['projectLogoIconUrl'];
-                            var r = document.querySelector(':root');
-                            r.style.setProperty('--logo-image', 'url('+projectLogoIconUrl+')');
+                            applyConfig(success.data);
                         },
                         function(error){
                         }
                     );
             }
 
+
+
+            function applyConfig(config){
+
+                //set main logo (it's single config entry)
+                var projectLogoIconUrl = config['projectLogoIconUrl'][0];
+                var fullUrl = baseUri.replace("/auth/", "") + resourcesPath + "/" + projectLogoIconUrl;
+                var image = createElementFromHTML("<img src='" + fullUrl + "' alt='" + realm + "' style='max-height:100px; width:auto;'>")
+                var logoParentDiv = document.querySelector('#kc-header-wrapper');
+                logoParentDiv.appendChild(image);
+
+                //set footer icons/logos urls (multiple config entries)
+                var iconUrls = config['footerIconUrl'];
+                var logosContainerElem = document.querySelector('#footer-logos-container');
+                if(iconUrls != null && iconUrls.length > 0){
+                    for (let i = 0; i < iconUrls.length; i++) {
+                        var iconUrl = iconUrls[i];
+                        if(iconUrl != null && iconUrl.length > 0){
+                            var fullUrl = baseUri.replace("/auth/", "") + resourcesPath + "/" + iconUrl;
+                            var logoUrlElem = createElementFromHTML("<img src='" + fullUrl + "' style='max-height:50px; margin: auto;' class='horizontal-padding-10'></img>");
+                            logosContainerElem.appendChild(logoUrlElem);
+                        }
+                    }
+                }
+
+                //set privacy policy url (it's single config entry)
+                var privacyPolicyUrl = config['privacyPolicyUrl'];
+                var linksContainerElem = document.querySelector('#footer-links-container');
+                if(privacyPolicyUrl != null && privacyPolicyUrl.length > 0 && privacyPolicyUrl[0].length > 0){
+                    var privacyProlicyElem = createElementFromHTML("<a class='horizontal-padding-10' href='" + privacyPolicyUrl[0] + "'>Privacy</a>");
+                    linksContainerElem.appendChild(privacyProlicyElem);
+                }
+
+                //set terms of use policy url (it's single config entry)
+                var termsOfUseUrl = config['termsOfUseUrl'];
+                var linksContainerElem = document.querySelector('#footer-links-container');
+                if(termsOfUseUrl != null && termsOfUseUrl.length > 0 && termsOfUseUrl[0].length > 0){
+                    var termsOfUseElem = createElementFromHTML("<a class='horizontal-padding-10' href='" + termsOfUseUrl[0] + "'>Terms</a>");
+                    linksContainerElem.appendChild(termsOfUseElem);
+                }
+
+                //set html footer text (it's single config entry)
+                var htmlFooterText = config['htmlFooterText'];
+                var footerHtmlTextElem = document.querySelector('#footer-html-text');
+                if(htmlFooterText != null && htmlFooterText.length > 0)
+                    footerHtmlTextElem.innerHTML = htmlFooterText[0];
+
+            }
+
+            function createElementFromHTML(htmlString) {
+                var div = document.createElement('div');
+                div.innerHTML = htmlString.trim();
+                return div.firstChild;
+            }
+
+
+            function drawFooterInPlace(){
+                fetch(baseUri.replace("/auth/", "") + resourcesPath + "/elements/footer.html")
+                    .then((r)=>{r.text().then((d)=>{
+                        let element = createElementFromHTML(d);
+                        document.getElementsByClassName("login-pf-page")[0].appendChild(element);
+                        getConfig();
+                    })
+                });
+            }
+
+            function removeDefaultLogo() {
+                var logoParentDiv = document.querySelector('#kc-header-wrapper');
+                for(var i=0 ; i<logoParentDiv.childNodes.length; i++)
+                    logoParentDiv.childNodes[i].remove();
+            }
+
+
             getIdps();
 
             getPromotedIdps();
 
-            getConfigAndApply();
+            removeDefaultLogo();
+
+            drawFooterInPlace();
 
 
             $scope.scrollCallback = function ($event, $direct) {
