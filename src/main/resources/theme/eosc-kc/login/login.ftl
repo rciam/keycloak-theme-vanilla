@@ -134,6 +134,14 @@
                     linksContainerElem.appendChild(termsOfUseElem);
                 }
 
+                //set contact email (it's single config entry)
+                var contactEmail = config['contactEmail'];
+                var contactContainerElem = document.querySelector('#footer-contact-container');
+                if(contactEmail != null && contactEmail.length > 0 && contactEmail[0].length > 0){
+                    var contactElem = createElementFromHTML("<a class='horizontal-padding-10' href='mailto: " + contactEmail[0] + "'>Contact</a>");
+                    contactContainerElem.appendChild(contactElem);
+                }
+
                 //set html footer text (it's single config entry)
                 var htmlFooterText = config['htmlFooterText'];
                 var footerHtmlTextElem = document.querySelector('#footer-html-text');
