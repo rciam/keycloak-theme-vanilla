@@ -209,7 +209,7 @@
                 <a ng-repeat="idp in promotedIdps" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : promotedIdps.length > 3 }" type="button" href="{{idp.loginUrl}}">
                     <div ng-if="idp.iconClasses!=null">
                         <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
-                        <span class="${properties.kcFormSocialAccountNameClass!} kc-social-icon-text">{{idp.displayName}}</span>
+                        <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
                     </div>
                     <div ng-if="idp.iconClasses==null">
                         <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
@@ -230,7 +230,7 @@
                <a ng-repeat="idp in idps" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : idps.length > 3 }" type="button" href="{{idp.loginUrl}}">
                   <div ng-if="idp.iconClasses!=null">
                      <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
-                     <span class="${properties.kcFormSocialAccountNameClass!} kc-social-icon-text">{{idp.displayName}}</span>
+                     <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
                   </div>
                   <div ng-if="idp.iconClasses==null">
                      <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>

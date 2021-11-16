@@ -4,11 +4,14 @@
     background-size: 70%;
 }
 
-/*
+
 .orcid-logo {
     background-image: url(../img/orcid-logo.png);
 }
-*/
+
+.grnet-logo {
+    background-image: url(../img/grnet.png);
+}
 
 div.kc-logo-text {
     background-image: var(--logo-image);
