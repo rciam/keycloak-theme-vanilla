@@ -190,15 +190,19 @@
 
             };
 
-            $scope.applySearch = function(e){
-                if(e==null || e.which === 13){ //from button click or from keyboard key===enter
+            $scope.$watch(
+                "fetchParams.keyword",
+                function handleChange(newValue, oldValue) {
+                  if (newValue !== oldValue) {
                     $scope.idps = [];
                     $scope.fetchParams.first = 0;
                     $scope.totalIdpsAskedFor = 0;
                     $scope.reachedEndPage = false;
                     getIdps();
+                  }
                 }
-            }
+              );
+
 
         });
 
@@ -295,8 +299,8 @@
             <h4>${msg("identity-provider-login-label")}</h4>
 -->
             <div ng-if="(idps.length>=fetchParams.max && fetchParams.keyword==null) || fetchParams.keyword!=null">
-                <input id="kc-providers-filter" type="text" placeholder="Search..." ng-model="fetchParams.keyword" ng-keypress="applySearch($event)">
-                <i class="fa fa-search" id="kc-providers-filter-button" data-ng-click="applySearch(null)"> </i>
+                <input id="kc-providers-filter" type="text" placeholder="Search..." ng-model="fetchParams.keyword">
+                <!-- <i class="fa fa-search" id="kc-providers-filter-button"> </i> -->
             </div>
             <ul id="kc-providers-list" class="${properties.kcFormSocialAccountListClass!} login-pf-list-scrollable" on-scroll="scrollCallback($event, $direct)" >
                <a ng-repeat="idp in idps" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : idps.length > 3 }" type="button" href="{{idp.loginUrl}}">
