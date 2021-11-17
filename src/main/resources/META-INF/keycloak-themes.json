@@ -1,7 +1,7 @@
 {
     "themes": [
         {
-            "name" : "eosc-kc",
+            "name" : "rciam",
             "types": [ "login" ]
         }
     ]
