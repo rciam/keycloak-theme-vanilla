@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package io.rciam.keycloak.rest;
+package io.github.rciam.keycloak.rest;
 
 import org.keycloak.Config.Scope;
 import org.keycloak.models.KeycloakSession;

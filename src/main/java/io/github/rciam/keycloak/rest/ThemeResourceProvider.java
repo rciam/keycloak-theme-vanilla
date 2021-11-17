@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package io.rciam.keycloak.rest;
+package io.github.rciam.keycloak.rest;
 
-import io.rciam.keycloak.resolver.ThemeConfig;
+import io.github.rciam.keycloak.resolver.ThemeConfig;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.forms.login.freemarker.model.IdentityProviderBean;
 import org.keycloak.models.IdentityProviderModel;
