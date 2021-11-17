@@ -1,0 +1,5 @@
+Just add in this folder any properties file with the format
+messages_xx.properties, where xx is the language 2-digit code
+i.e.  messages_es.properties for spanish translations, messages_pt.properties for portuguese translations, etc
+
+This usage.txt file is neutral, meaning that it does not affect in any way the theme, so you can safely let it exist here!
