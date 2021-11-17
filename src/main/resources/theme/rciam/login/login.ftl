@@ -12,6 +12,7 @@
         var idpLoginFullUrl = '${idpLoginFullUrl?no_esc}';
         var resourcesCommonPath = '${url.resourcesCommonPath}';
         var resourcesPath = '${url.resourcesPath}';
+        var demoRibbonText = "${msg('demoRibbonText')}";
     </script>
 
 
@@ -145,8 +146,19 @@
                 //set html footer text (it's single config entry)
                 var htmlFooterText = config['htmlFooterText'];
                 var footerHtmlTextElem = document.querySelector('#footer-html-text');
-                if(htmlFooterText != null && htmlFooterText.length > 0)
+                if(htmlFooterText != null && htmlFooterText.length > 0) {
                     footerHtmlTextElem.innerHTML = htmlFooterText[0];
+                }
+
+                //set demo ribbon if the theme is marked as demo
+                var isDemo = config['isDemo'];
+                if(isDemo != null && isDemo.length > 0 && isDemo[0] === "true") {  //isDemo[0] is parsed as string "true" or "false"
+                    if((demoRibbonText == null) || (demoRibbonText.length == 0))
+                        demoRibbonText = "Demo";
+                    document.body.appendChild(createElementFromHTML("<div class='corner-ribbon'>" + demoRibbonText + "</div>"));
+                }
+
+
 
             }
 
