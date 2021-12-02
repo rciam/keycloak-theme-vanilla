@@ -2,6 +2,9 @@
 
 This is the vanilla theme for rciam installations.
 
+## Screenshot
+![screenshot](screenshot.png)
+
 :red_circle: **IMPORTANT**: 
 - In this repo, the master branch contains the base code (and a default template)
 - Project-specific customizations "inherit" the master's code (builds the master) and add the customizations they include. These should reside in a different project-dedicated repository. For instance, the DISSCO project has its customizations in its own repo, [here](https://github.com/grnet/keycloak-theme-dissco)

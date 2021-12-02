@@ -12,3 +12,14 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version. For e
 - A configuration is created to allow loading custom project icon
 - A default icon is added (GRNET icon)
 
+## [v1.1.0] - 15-11-2021
+### Added
+- A footer is created to allow showing some teplated information
+- Templated footer can now include icons, privacy policy urls, terms of use urls, contact emails, and a custom footer html snippet
+
+## [v1.2.0] - 17-11-2021
+### Added
+- Updated configuration to enable defining a red ribbon for Demo instances 
+
+### Changed
+- Refactored the internal classes (changed package names, etc)
