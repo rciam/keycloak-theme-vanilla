@@ -15,6 +15,7 @@ public class Commons {
     private static String basePath;
     public static final String THEME_WORKING_FOLDER = "theme-config";
     public static final String TERMS_OF_USE_FOLDER = "terms-of-use";
+    public static final String CONFIGURATIONS_FOLDER = "configurations";
 
     /**
      * Uses either "JBOSS_HOME" or (as a failback, when not running in wildfly) "HOME"

@@ -3,7 +3,10 @@ package io.github.rciam.keycloak.resolver;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.github.rciam.keycloak.resolver.stubs.Configuration;
 import org.jboss.logging.Logger;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.RealmModel;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -34,25 +37,24 @@ public class ThemeConfig {
 
     private static final Logger logger = Logger.getLogger(ThemeConfig.class);
 
+    private static boolean REALMS_LISTENER_ADDED = false;
     private static WatchService watchService;
     private static WatchKey watchKey;
     private static boolean FOLDER_INITIALIZED = false;
-    private static Map<String, List<String>> config;
+    private static Configuration defaultConfig;
+    private static Map<String, Configuration> realmsConfigs;
 
 
-    public ThemeConfig() {
-        initializeStatics();
+    public ThemeConfig(KeycloakSession session) {
+        initializeStatics(session);
     }
 
-    public List<String> get(String configParam){
-        return config.get(configParam);
+
+    public Configuration getConfig(String realmName) {
+        return realmsConfigs.get(realmName);
     }
 
-    public Map<String, List<String>> getConfig() {
-        return config;
-    }
-
-    private void initializeStatics() {
+    private void initializeStatics(KeycloakSession session) {
 
         if(!FOLDER_INITIALIZED) {
             try {
@@ -63,28 +65,69 @@ public class ThemeConfig {
             }
         }
 
-        if(config == null)
-            synchronizeConfig();
+        if(defaultConfig == null)
+            loadDefaultConfig();
+
+        if(realmsConfigs == null){
+            realmsConfigs = new HashMap<>();
+            session.realms().getRealmsStream().forEach(realmModel -> {
+                synchronizeConfig(realmModel.getName());
+            });
+        }
+
+        if(!REALMS_LISTENER_ADDED){
+            session.getKeycloakSessionFactory().register(event -> {
+                if(event instanceof RealmModel.RealmCreationEvent) {
+                    String realmName = ((RealmModel.RealmCreationEvent)event).getCreatedRealm().getName();
+                    synchronizeConfig(realmName);
+                }
+                if(event instanceof RealmModel.RealmRemovedEvent) {
+                    String realmName = ((RealmModel.RealmRemovedEvent)event).getRealm().getName();
+                    String filePath = getThemeConfigFilePath(realmName);
+                    File configFile = new File(filePath);
+                    if(configFile.exists())
+                        configFile.delete();
+                }
+            });
+            REALMS_LISTENER_ADDED = true;
+        }
+
 
         if(watchKey == null) {
             Runnable runnable = () -> {
                 Path path = Paths.get(getThemeConfigFolder());
                 try {
                     watchService = FileSystems.getDefault().newWatchService();
-                    watchKey = path.register(watchService, ENTRY_MODIFY);
+                    watchKey = path.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
 
                     while ((watchKey = watchService.take()) != null) {
                         for (WatchEvent<?> event : watchKey.pollEvents()) {
-                            if(event.context().toString().endsWith("configuration.json")){
-                                if(event.kind() == ENTRY_MODIFY) {
-                                    String fileContents = Commons.readFile(getThemeConfigFilePath());
+                            if(event.context().toString().endsWith(".json")){
+                                if(event.kind() == ENTRY_CREATE) {
+                                    String realmName = event.context().toString().replace(".json","");
+                                    String fileContents = Commons.readFile(getThemeConfigFilePath(realmName));
                                     try {
-                                        config = new ObjectMapper().readValue(fileContents, new TypeReference<HashMap<String, List<String>>>() {});
+                                        Configuration config = new ObjectMapper().readValue(fileContents, Configuration.class);
+                                        realmsConfigs.put(realmName, config);
                                     }
                                     catch(IOException ex){
-                                        config = new HashMap<>();
                                         logger.error("Could not update the keycloak-theme-vanilla specific config: " + fileContents , ex);
                                     }
+                                }
+                                if(event.kind() == ENTRY_MODIFY) {
+                                    String realmName = event.context().toString().replace(".json","");
+                                    String fileContents = Commons.readFile(getThemeConfigFilePath(realmName));
+                                    try {
+                                        Configuration config = new ObjectMapper().readValue(fileContents, Configuration.class);
+                                        realmsConfigs.replace(realmName, config);
+                                    }
+                                    catch(IOException ex){
+                                        logger.error("Could not update the keycloak-theme-vanilla specific config: " + fileContents , ex);
+                                    }
+                                }
+                                if(event.kind() == ENTRY_DELETE) {
+                                    String realmName = event.context().toString().replace(".json","");
+                                    realmsConfigs.remove(realmName);
                                 }
                                 logger.info("Noticed a change on a theme's configuration file. " + "Event kind:" + event.kind() + " File : " + event.context() + " - Updating configuration accordingly!");
                             }
@@ -103,70 +146,51 @@ public class ThemeConfig {
     }
 
 
-    private void synchronizeConfig() {
+    private void synchronizeConfig(String realmName) {
         ObjectMapper om = new ObjectMapper();
-        String filePath = getThemeConfigFilePath();
+        String filePath = getThemeConfigFilePath(realmName);
         File configFile = new File(filePath);
-        String defaultConfig = getDefaultConfigString();
-        String fileContent;
+        Configuration configuration;
         if(!configFile.exists()) {
             try {
-                Commons.writeFile(filePath, defaultConfig);
+                Commons.writeFile(filePath, om.writeValueAsString(defaultConfig));
             }
             catch(IOException ex){
                 logger.error("Theme - Could not write to theme's config file: " + filePath);
             }
-            fileContent = defaultConfig;
+            configuration = defaultConfig;
         }
         else {
             try {
-                fileContent = Commons.readFile(filePath);
+                configuration = om.readValue(Commons.readFile(filePath), Configuration.class);
             }
             catch (IOException ex){
                 logger.error("Theme - Could not read theme's config file: " + filePath);
-                fileContent = "";
+                configuration = defaultConfig;
             }
         }
-
-        try {
-            config = om.readValue(fileContent, new TypeReference<HashMap<String, List<String>>>() {});
-        }
-        catch(IOException ex){
-            config = new HashMap<>();
-            logger.error("Could not parse the keycloak-theme-vanilla specific config: " + fileContent , ex);
-        }
-
+        realmsConfigs.put(realmName, configuration);
     }
 
 
-    private String getDefaultConfigString(){
-        InputStream is = getClass().getClassLoader().getResourceAsStream("configuration.json");
-        return new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))
-                .lines()
-                .collect(Collectors.joining(System.lineSeparator()));
-    }
-
-
-    private Map<String,List<String>> getDefaultConfig(){
-        Map<String,List<String>> defaultConfig;
+    private void loadDefaultConfig(){
         InputStream is = getClass().getClassLoader().getResourceAsStream("configuration.json");
         try {
-            defaultConfig = new ObjectMapper().readValue(is, new TypeReference<HashMap<String, List<String>>>() {});
+            defaultConfig = new ObjectMapper().readValue(is, Configuration.class);
         }
         catch(IOException ex){
-            defaultConfig = new HashMap<>();
+            defaultConfig = new Configuration();
             logger.error("Could not read the default keycloak-theme-vanilla specific config.", ex);
         }
-        return defaultConfig;
     }
 
 
     private String getThemeConfigFolder(){
-        return String.format("%s/%s", Commons.getBasePath(), Commons.THEME_WORKING_FOLDER);
+        return String.format("%s/%s/%s", Commons.getBasePath(), Commons.THEME_WORKING_FOLDER, Commons.CONFIGURATIONS_FOLDER);
     }
 
-    private String getThemeConfigFilePath(){
-        return String.format("%s/%s/configuration.json", Commons.getBasePath(), Commons.THEME_WORKING_FOLDER);
+    private String getThemeConfigFilePath(String realmName){
+        return String.format("%s/%s/%s/%s.json", Commons.getBasePath(), Commons.THEME_WORKING_FOLDER, Commons.CONFIGURATIONS_FOLDER, realmName);
     }
 
     /**

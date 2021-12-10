@@ -71,7 +71,7 @@ public class TermsOfUse {
                     synchronizeRealmTermsOfUse(realmName);
                 }
                 if(event instanceof RealmModel.RealmRemovedEvent) {
-                    String realmName = ((RealmModel.RealmCreationEvent)event).getCreatedRealm().getName();
+                    String realmName = ((RealmModel.RealmRemovedEvent)event).getRealm().getName();
                     String filePath = getTermsOfUseFile(realmName);
                     File htmlFile = new File(filePath);
                     if(htmlFile.exists())

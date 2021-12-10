@@ -56,7 +56,7 @@ public class ThemeResourceProvider implements RealmResourceProvider {
     public ThemeResourceProvider(KeycloakSession session) {
         this.session = session;
         if(themeConfig == null)
-            themeConfig = new ThemeConfig();
+            themeConfig = new ThemeConfig(session);
         if(termsOfUse == null)
             termsOfUse = new TermsOfUse(session);
     }
@@ -75,7 +75,7 @@ public class ThemeResourceProvider implements RealmResourceProvider {
     @Path("/theme-config")
     @Produces(MediaType.APPLICATION_JSON)
     public Map<String,List<String>> getThemeConfig() {
-        return themeConfig.getConfig();
+        return themeConfig.getConfig(session.getContext().getRealm().getName());
     }
 
 
