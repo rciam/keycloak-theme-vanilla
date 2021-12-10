@@ -17,6 +17,7 @@
 
 package io.github.rciam.keycloak.rest;
 
+import io.github.rciam.keycloak.resolver.TermsOfUse;
 import io.github.rciam.keycloak.resolver.ThemeConfig;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.forms.login.freemarker.model.IdentityProviderBean;
@@ -28,8 +29,10 @@ import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -40,6 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,11 +51,14 @@ public class ThemeResourceProvider implements RealmResourceProvider {
 
     private KeycloakSession session;
     private static ThemeConfig themeConfig;
+    private static TermsOfUse termsOfUse;
 
     public ThemeResourceProvider(KeycloakSession session) {
         this.session = session;
-        if(themeConfig==null)
+        if(themeConfig == null)
             themeConfig = new ThemeConfig();
+        if(termsOfUse == null)
+            termsOfUse = new TermsOfUse(session);
     }
 
     @Override
@@ -66,10 +73,22 @@ public class ThemeResourceProvider implements RealmResourceProvider {
 
     @GET
     @Path("/theme-config")
-    @Produces(MediaType.APPLICATION_JSON )
+    @Produces(MediaType.APPLICATION_JSON)
     public Map<String,List<String>> getThemeConfig() {
         return themeConfig.getConfig();
     }
+
+
+    @GET
+    @Path("/terms-of-use")
+    @Produces(MediaType.TEXT_HTML)
+    public String getTermsOfUse(
+            @QueryParam("complete") @DefaultValue("true") Optional<Boolean> completeOp
+    ) {
+        boolean complete = completeOp.isPresent() ? completeOp.get() : true;
+        return complete ? "<!DOCTYPE html><html><body>" + termsOfUse.getTermsOfUse(session.getContext().getRealm().getName()) + "</body></html>" : termsOfUse.getTermsOfUse(session.getContext().getRealm().getName());
+    }
+
 
 
     /**
@@ -122,9 +141,7 @@ public class ThemeResourceProvider implements RealmResourceProvider {
     @GET
     @Path("/identity-providers-promoted")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<IdentityProviderBean.IdentityProvider> getPromotedIdentityProviders(
-            @PathParam("realm") String realmName
-    ) {
+    public List<IdentityProviderBean.IdentityProvider> getPromotedIdentityProviders() {
         RealmModel realm = session.getContext().getRealm();
         List<IdentityProviderModel> promotedProviders = new ArrayList<>();
         realm.getIdentityProvidersStream().forEach(idp -> {

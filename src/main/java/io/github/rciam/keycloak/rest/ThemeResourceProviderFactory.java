@@ -17,6 +17,8 @@
 
 package io.github.rciam.keycloak.rest;
 
+import io.github.rciam.keycloak.resolver.TermsOfUse;
+import io.github.rciam.keycloak.resolver.ThemeConfig;
 import org.keycloak.Config.Scope;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
@@ -47,6 +49,8 @@ public class ThemeResourceProviderFactory implements RealmResourceProviderFactor
 
     @Override
     public void close() {
+        TermsOfUse.shutdownAllWatchersAndListeners();
+        ThemeConfig.shutdownAllWatchersAndListeners();
     }
 
 }
