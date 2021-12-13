@@ -1,6 +1,6 @@
 {
   "projectLogoIconUrl": ["additional/logo.png"],
-  "footerIconUrls" : ["additional/logo/grnet.png","additional/eu.png"],
+  "footerIconUrls" : ["additional/grnet/logo.png","additional/eu.png"],
   "privacyPolicyUrl" : ["https://rciam.example.org/privacy"],
   "termsOfUseUrl" : [],
   "contactUrl" : ["mailto:contact@example.com"],
