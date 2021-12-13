@@ -61,12 +61,12 @@
             }
             linksContainerElem.appendChild(termsOfUseElem);
 
-            //set contact url (it's single config entry)
-            var contactUrl = config['contactUrl'];
-            var contactContainerElem = document.querySelector('#footer-contact-container');
-            if(contactUrl != null && contactUrl.length > 0 && contactUrl[0].length > 0){
-                var contactElem = createElementFromHTML("<a class='horizontal-padding-10' href='" + contactUrl[0] + "'>Support</a>");
-                contactContainerElem.appendChild(contactElem);
+            //set support url (it's single config entry)
+            var supportUrl = config['supportUrl'];
+            var supportContainerElem = document.querySelector('#footer-support-container');
+            if(supportUrl != null && supportUrl.length > 0 && supportUrl[0].length > 0){
+                var supportElem = createElementFromHTML("<a class='horizontal-padding-10' href='" + supportUrl[0] + "'>Support</a>");
+                supportContainerElem.appendChild(supportElem);
             }
 
             //set html footer text (it's single config entry)
