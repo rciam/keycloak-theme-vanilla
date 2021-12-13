@@ -65,7 +65,7 @@
             var contactUrl = config['contactUrl'];
             var contactContainerElem = document.querySelector('#footer-contact-container');
             if(contactUrl != null && contactUrl.length > 0 && contactUrl[0].length > 0){
-                var contactElem = createElementFromHTML("<a class='horizontal-padding-10' href='" + contactUrl[0] + "'>Contact</a>");
+                var contactElem = createElementFromHTML("<a class='horizontal-padding-10' href='" + contactUrl[0] + "'>Support</a>");
                 contactContainerElem.appendChild(contactElem);
             }
 
