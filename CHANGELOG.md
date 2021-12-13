@@ -23,3 +23,11 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version. For e
 
 ### Changed
 - Refactored the internal classes (changed package names, etc)
+
+## [v2.0.0] - 13-12-2021
+### Added
+- Configuration file listeners and realm listeners, which update the running instance with any configuration changes (no restart required).
+- Terms of use file and realm listeners, which update the running instance with any terms of use changes (no restart required).
+
+### Changed
+- Moved all deployment-specific resources (icons) in the vanilla. Configuration specifies which ones are used. 
