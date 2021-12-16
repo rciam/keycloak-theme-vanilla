@@ -28,6 +28,7 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version. For e
 ### Added
 - Configuration file listeners and realm listeners, which update the running instance with any configuration changes (no restart required).
 - Terms of use file and realm listeners, which update the running instance with any terms of use changes (no restart required).
+- Also added an admin http interface to allow admins to upload a new config and terms of use on any realm.
 
 ### Changed
 - Moved all deployment-specific resources (icons) in the vanilla. Configuration specifies which ones are used. 
