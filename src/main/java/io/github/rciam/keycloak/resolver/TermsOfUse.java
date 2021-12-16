@@ -1,6 +1,11 @@
 package io.github.rciam.keycloak.resolver;
 
+import io.github.rciam.keycloak.resolver.stubs.Configuration;
+import io.github.rciam.keycloak.resolver.stubs.cluster.RealmCreatedEvent;
+import io.github.rciam.keycloak.resolver.stubs.cluster.RealmDeletedEvent;
 import org.jboss.logging.Logger;
+import org.keycloak.cluster.ClusterEvent;
+import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 
@@ -17,6 +22,7 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
@@ -28,6 +34,9 @@ public class TermsOfUse {
     private static final Logger logger = Logger.getLogger(TermsOfUse.class);
 
     private static boolean REALMS_LISTENER_ADDED = false;
+    private static final String CREATE_TERMS_OF_USE = "CREATE_TERMS_OF_USE";
+    private static final String DELETE_TERMS_OF_USE = "DELETE_TERMS_OF_USE";
+    private static ClusterProvider cluster;
     private static boolean FOLDER_INITIALIZED = false;
     private static WatchService watchService;
     private static WatchKey watchKey;
@@ -41,6 +50,15 @@ public class TermsOfUse {
 
     public String getTermsOfUse(String realmName){
         return realmsTermsOfUseHtml.get(realmName);
+    }
+
+    /**
+     * Does not broadcast, because it's not safe to send any configuration or code through unsecure
+     * plaintext (serialized) event messages and materialize on the other nodes
+    */
+    public void setTermsOfUse(String realmName, String termsOfUseHtml) {
+        termsOfUseHtml = Commons.removeScriptTags(termsOfUseHtml);
+        localSynchronizeRealmTermsOfUse(realmName, termsOfUseHtml);
     }
 
     private void initializeStatics(KeycloakSession session){
@@ -60,24 +78,40 @@ public class TermsOfUse {
         if(realmsTermsOfUseHtml == null){
             realmsTermsOfUseHtml = new HashMap<>();
             session.realms().getRealmsStream().forEach(realmModel -> {
-                synchronizeRealmTermsOfUse(realmModel.getName());
+                localSynchronizeRealmTermsOfUse(realmModel.getName());
             });
         }
 
+        if(cluster == null)
+            cluster = session.getProvider(ClusterProvider.class);
+
         if(!REALMS_LISTENER_ADDED){
+            //register local listener
             session.getKeycloakSessionFactory().register(event -> {
                 if(event instanceof RealmModel.RealmCreationEvent) {
                     String realmName = ((RealmModel.RealmCreationEvent)event).getCreatedRealm().getName();
-                    synchronizeRealmTermsOfUse(realmName);
+                    localSynchronizeRealmTermsOfUse(realmName);
+                    cluster.notify(CREATE_TERMS_OF_USE, RealmCreatedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast creation event to all other cluster nodes
                 }
-                if(event instanceof RealmModel.RealmRemovedEvent) {
+                else if(event instanceof RealmModel.RealmRemovedEvent) {
                     String realmName = ((RealmModel.RealmRemovedEvent)event).getRealm().getName();
                     String filePath = getTermsOfUseFile(realmName);
                     File htmlFile = new File(filePath);
                     if(htmlFile.exists())
                         htmlFile.delete();
+                    cluster.notify(DELETE_TERMS_OF_USE, RealmDeletedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast deletion event to all other cluster nodes
                 }
             });
+            //register cluster listeners
+            cluster.registerListener(CREATE_TERMS_OF_USE, (ClusterEvent event) -> {
+                RealmCreatedEvent realmCreatedEvent = (RealmCreatedEvent) event;
+                localSynchronizeRealmTermsOfUse(realmCreatedEvent.getRealmName());
+            });
+            cluster.registerListener(DELETE_TERMS_OF_USE, (ClusterEvent event) -> {
+                RealmDeletedEvent realmDeletedEvent = (RealmDeletedEvent) event;
+                localSynchronizeRealmTermsOfUse(realmDeletedEvent.getRealmName());
+            });
+
             REALMS_LISTENER_ADDED = true;
         }
 
@@ -129,29 +163,38 @@ public class TermsOfUse {
         return String.format("%s/%s/%s/%s.html", Commons.getBasePath(), Commons.THEME_WORKING_FOLDER, Commons.TERMS_OF_USE_FOLDER, realmName);
     }
 
-    private void synchronizeRealmTermsOfUse(String realmName) {
+    private void localSynchronizeRealmTermsOfUse(String realmName){
+        localSynchronizeRealmTermsOfUse(realmName, null);
+    }
+
+    private void localSynchronizeRealmTermsOfUse(String realmName, String termsOfUseHtml) {
         String filePath = getTermsOfUseFile(realmName);
         File htmlFile = new File(filePath);
         String fileContent;
         if(!htmlFile.exists()) {
+            fileContent = termsOfUseHtml != null ? termsOfUseHtml : defaultTermsOfUseHtml;
             try {
-                Commons.writeFile(filePath, defaultTermsOfUseHtml);
+                Commons.writeFile(filePath, fileContent);
             }
             catch(IOException ex){
                 logger.error("Theme - Could not write to theme's 'terms of use' file: " + filePath);
             }
-            fileContent = defaultTermsOfUseHtml;
         }
         else {
             try {
-                fileContent = Commons.readFile(filePath);
+                fileContent = termsOfUseHtml != null ? termsOfUseHtml : Commons.readFile(filePath);
+                if(termsOfUseHtml != null)
+                    Commons.writeFile(filePath, fileContent);
             }
             catch (IOException ex){
                 logger.error("Theme - Could not read theme's 'terms of use' file: " + filePath);
-                fileContent = "";
+                fileContent = defaultTermsOfUseHtml;
             }
         }
-        realmsTermsOfUseHtml.put(realmName, fileContent);
+        if(realmsTermsOfUseHtml.keySet().contains(realmName))
+            realmsTermsOfUseHtml.replace(realmName, fileContent);
+        else
+            realmsTermsOfUseHtml.put(realmName, fileContent);
     }
 
     private void loadDefaultTermsOfUse(){

@@ -4,7 +4,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.rciam.keycloak.resolver.stubs.Configuration;
+import io.github.rciam.keycloak.resolver.stubs.cluster.RealmCreatedEvent;
+import io.github.rciam.keycloak.resolver.stubs.cluster.RealmDeletedEvent;
 import org.jboss.logging.Logger;
+import org.keycloak.cluster.ClusterEvent;
+import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
 
@@ -37,7 +41,11 @@ public class ThemeConfig {
 
     private static final Logger logger = Logger.getLogger(ThemeConfig.class);
 
+
     private static boolean REALMS_LISTENER_ADDED = false;
+    private static final String CREATE_THEME_CONFIG = "CREATE_THEME_CONFIG";
+    private static final String DELETE_THEME_CONFIG = "DELETE_THEME_CONFIG";
+    private static ClusterProvider cluster;
     private static WatchService watchService;
     private static WatchKey watchKey;
     private static boolean FOLDER_INITIALIZED = false;
@@ -53,6 +61,16 @@ public class ThemeConfig {
     public Configuration getConfig(String realmName) {
         return realmsConfigs.get(realmName);
     }
+
+    /**
+     * Does not broadcast, because it's not safe to send any configuration or code through unsecure
+     * plaintext (serialized) event messages and materialize on the other nodes
+     */
+    public void setConfig(String realmName, Configuration config) {
+        realmsConfigs.put(realmName, config);
+        localSynchronizeConfig(realmName, config);
+    }
+
 
     private void initializeStatics(KeycloakSession session) {
 
@@ -71,24 +89,40 @@ public class ThemeConfig {
         if(realmsConfigs == null){
             realmsConfigs = new HashMap<>();
             session.realms().getRealmsStream().forEach(realmModel -> {
-                synchronizeConfig(realmModel.getName());
+                localSynchronizeConfig(realmModel.getName());
             });
         }
 
+        if(cluster == null)
+            cluster = session.getProvider(ClusterProvider.class);
+
         if(!REALMS_LISTENER_ADDED){
+            //register local listener
             session.getKeycloakSessionFactory().register(event -> {
                 if(event instanceof RealmModel.RealmCreationEvent) {
                     String realmName = ((RealmModel.RealmCreationEvent)event).getCreatedRealm().getName();
-                    synchronizeConfig(realmName);
+                    localSynchronizeConfig(realmName);
+                    cluster.notify(CREATE_THEME_CONFIG, RealmCreatedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast event to all other cluster nodes
                 }
-                if(event instanceof RealmModel.RealmRemovedEvent) {
+                else if(event instanceof RealmModel.RealmRemovedEvent) {
                     String realmName = ((RealmModel.RealmRemovedEvent)event).getRealm().getName();
                     String filePath = getThemeConfigFilePath(realmName);
                     File configFile = new File(filePath);
                     if(configFile.exists())
                         configFile.delete();
+                    cluster.notify(DELETE_THEME_CONFIG, RealmDeletedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast event to all other cluster nodes
                 }
             });
+            //register cluster listeners
+            cluster.registerListener(CREATE_THEME_CONFIG, (ClusterEvent event) -> {
+                RealmCreatedEvent realmCreatedEvent = (RealmCreatedEvent) event;
+                localSynchronizeConfig(realmCreatedEvent.getRealmName());
+            });
+            cluster.registerListener(DELETE_THEME_CONFIG, (ClusterEvent event) -> {
+                RealmDeletedEvent realmDeletedEvent = (RealmDeletedEvent) event;
+                localSynchronizeConfig(realmDeletedEvent.getRealmName());
+            });
+
             REALMS_LISTENER_ADDED = true;
         }
 
@@ -146,30 +180,39 @@ public class ThemeConfig {
     }
 
 
-    private void synchronizeConfig(String realmName) {
+    private void localSynchronizeConfig(String realmName) {
+        localSynchronizeConfig(realmName, null);
+    }
+
+    private void localSynchronizeConfig(String realmName, Configuration config) {
         ObjectMapper om = new ObjectMapper();
         String filePath = getThemeConfigFilePath(realmName);
         File configFile = new File(filePath);
         Configuration configuration;
         if(!configFile.exists()) {
+            configuration = config != null ? config : defaultConfig;
             try {
-                Commons.writeFile(filePath, om.writeValueAsString(defaultConfig));
+                Commons.writeFile(filePath, om.writeValueAsString(configuration));
             }
             catch(IOException ex){
                 logger.error("Theme - Could not write to theme's config file: " + filePath);
             }
-            configuration = defaultConfig;
         }
         else {
             try {
-                configuration = om.readValue(Commons.readFile(filePath), Configuration.class);
+                configuration = config != null ? config : om.readValue(Commons.readFile(filePath), Configuration.class);
+                if(configuration != null)
+                    Commons.writeFile(filePath, om.writeValueAsString(configuration));
             }
             catch (IOException ex){
                 logger.error("Theme - Could not read theme's config file: " + filePath);
                 configuration = defaultConfig;
             }
         }
-        realmsConfigs.put(realmName, configuration);
+        if(realmsConfigs.keySet().contains(realmName))
+            realmsConfigs.replace(realmName, configuration);
+        else
+            realmsConfigs.put(realmName, configuration);
     }
 
 

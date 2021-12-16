@@ -46,7 +46,13 @@
             <version>${keycloak.version}</version>
             <scope>provided</scope>
         </dependency>
-<!--        <dependency>-->
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-commons</artifactId>
+            <version>11.0.9.Final</version>
+            <scope>provided</scope>
+        </dependency>
+        <!--        <dependency>-->
 <!--            <groupId>org.apache.commons</groupId>-->
 <!--            <artifactId>commons-lang3</artifactId>-->
 <!--        </dependency>-->

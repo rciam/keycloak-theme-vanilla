@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Commons {
@@ -38,6 +40,14 @@ public class Commons {
 
     public static String readFile(String filepath) throws IOException {
         return Files.lines(Paths.get(filepath)).collect(Collectors.joining(System.lineSeparator()));
+    }
+
+    public static String removeScriptTags(String htmlStr){
+        StringBuilder regex = new StringBuilder("<script[^>]*>(.*?)</script>");
+        int flags = Pattern.MULTILINE | Pattern.DOTALL| Pattern.CASE_INSENSITIVE;
+        Pattern pattern = Pattern.compile(regex.toString(), flags);
+        Matcher matcher = pattern.matcher(htmlStr);
+        return matcher.replaceAll("");
     }
 
 }
