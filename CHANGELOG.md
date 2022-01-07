@@ -32,3 +32,8 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version. For e
 
 ### Changed
 - Moved all deployment-specific resources (icons) in the vanilla. Configuration specifies which ones are used. 
+
+## [v2.1.0] - 7-1-2022
+### Changed
+- The terms-of-use served in the terms.ftl now use an iframe to show the internal or external link configured.
+- Theme config can now be partially updated from the REST endpoint. Previously, it could only be replaced.

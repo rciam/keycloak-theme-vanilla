@@ -25,6 +25,7 @@ import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ public class ThemeConfig {
 
     private static final Logger logger = Logger.getLogger(ThemeConfig.class);
 
+    private static ObjectMapper om = new ObjectMapper();
 
     private static boolean REALMS_LISTENER_ADDED = false;
     private static final String CREATE_THEME_CONFIG = "CREATE_THEME_CONFIG";
@@ -64,11 +66,19 @@ public class ThemeConfig {
 
     /**
      * Does not broadcast, because it's not safe to send any configuration or code through unsecure
-     * plaintext (serialized) event messages and materialize on the other nodes
+     * plaintext (serialized) event messages and materialize on the other nodes.
+     * Also, config should update partially, meaning that if contains a subset of the fields (i.e. a single field),
+     * should update only those, leaving the others intact.
      */
     public void setConfig(String realmName, Configuration config) {
-        realmsConfigs.put(realmName, config);
-        localSynchronizeConfig(realmName, config);
+        Configuration previous = realmsConfigs.get(realmName);
+        Configuration merged = new Configuration();
+        merged.putAll(previous);
+        config.entrySet().forEach(entry -> {
+            merged.put(entry.getKey(), entry.getValue());
+        });
+        realmsConfigs.put(realmName, merged);
+        localSynchronizeConfig(realmName, merged);
     }
 
 
