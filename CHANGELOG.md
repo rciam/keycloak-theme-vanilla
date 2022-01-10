@@ -37,3 +37,7 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version. For e
 ### Changed
 - The terms-of-use served in the terms.ftl now use an iframe to show the internal or external link configured.
 - Theme config can now be partially updated from the REST endpoint. Previously, it could only be replaced.
+
+## [v2.2.0] - 10-1-2022
+### Changed
+- Turned the theme into a hot-deployable theme.
