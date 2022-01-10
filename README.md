@@ -73,6 +73,7 @@ The expected body payload for the POST requests should be similar to the termsof
 |  v1.2.0 | v15.0.2-r1.0.5 + |
 |  v2.0.0 | v15.0.2-r1.0.6 + |
 |  v2.1.0 | v15.0.2-r1.0.6 + |
+|  v2.2.0 | v15.0.2-r1.0.6 + |
 
 ## License
 
