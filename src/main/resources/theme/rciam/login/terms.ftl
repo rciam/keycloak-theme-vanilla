@@ -1,10 +1,5 @@
 <#import "template.ftl" as layout>
 
-<#import "commons.ftl" as commons>
-
-<@commons.variables />
-<@commons.functions />
-
 <script>
 
     document.addEventListener('DOMContentLoaded', function(event) {
@@ -17,12 +12,6 @@
             iframe.style.height = (iframe.contentWindow.document.body.scrollHeight + 70) + 'px';
         }
     })
-
-    drawFooterInPlace();
-
-    document.addEventListener("DOMContentLoaded", function(event) {
-        removeDefaultLogo();
-    });
 
 
 </script>

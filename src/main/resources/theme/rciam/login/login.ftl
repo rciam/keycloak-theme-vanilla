@@ -1,17 +1,13 @@
 <#import "template.ftl" as layout>
 
-<#import "commons.ftl" as commons>
-
 <#-- <script src="${url.resourcesCommonPath}/node_modules/jquery/dist/jquery.min.js" type="text/javascript"></script>  -->
     <script src="${url.resourcesCommonPath}/node_modules/angular/angular.min.js"></script>
 
-    <@commons.variables />
 
     <script>
         var idpLoginFullUrl = '${idpLoginFullUrl?no_esc}';
     </script>
 
-    <@commons.functions />
 
 	<script>
 
@@ -83,10 +79,6 @@
             getIdps();
 
             getPromotedIdps();
-
-            removeDefaultLogo();
-
-            drawFooterInPlace();
 
 
             $scope.scrollCallback = function ($event, $direct) {
