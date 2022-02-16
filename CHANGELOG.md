@@ -41,3 +41,9 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version. For e
 ## [v2.2.0] - 10-1-2022
 ### Changed
 - Turned the theme into a hot-deployable theme.
+
+
+## [v2.3.0] - 16-2-2022
+### Changed
+- Reassembled the header (project icon) and footer to be applied on all template-inheriting login ftl pages. 
+- Extended the OIDC consent screen (RCIAM-791)
