@@ -166,7 +166,10 @@
 
         //set main logo (it's single config entry)
         var projectLogoIconUrl = config['projectLogoIconUrl'][0];
-        var fullUrl = baseUri.replace("/auth/", "") + resourcesPath + "/" + projectLogoIconUrl;
+        var fullUrl = projectLogoIconUrl;
+        if(!projectLogoIconUrl.trim().startsWith('http')){ //it's local path
+            fullUrl = baseUri.replace("/auth/", "") + resourcesPath + "/" + projectLogoIconUrl;
+        }
         var image = createElementFromHTML("<img src='" + fullUrl + "' alt='" + realm + "' style='max-height:100px; width:auto;'>")
         var logoParentDiv = document.querySelector('#kc-header-wrapper');
         logoParentDiv.appendChild(image);
