@@ -2,7 +2,7 @@
     "themes": [
         {
             "name" : "rciam",
-            "types": [ "login" ]
+            "types": [ "login", "account" ]
         }
     ]
 }

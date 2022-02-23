@@ -11,6 +11,7 @@
 
 	<script>
 
+
 		var angularLoginPart = angular.module("angularLoginPart", []);
 
         angularLoginPart.directive("onScroll", [function () {
@@ -31,7 +32,8 @@
 
 		angularLoginPart.controller("idpListing", function($scope, $http) {
 
-            var sessionParams = new URL(baseUri+idpLoginFullUrl).searchParams;
+
+            var sessionParams = new URL(baseUriOrigin+idpLoginFullUrl).searchParams;
 
             $scope.fetchParams = { 'keyword': null, 'first' : 0, 'max': 20, 'client_id': sessionParams.get('client_id'), 'tab_id': sessionParams.get('tab_id'), 'session_code': sessionParams.get('session_code')};
             $scope.idps = [];
@@ -39,11 +41,11 @@
             $scope.reachedEndPage = false;
 
             function setLoginUrl(idp){
-                idp.loginUrl = baseUri.replace("/auth/", "") + idpLoginFullUrl.replace("/_/", "/"+idp.alias+"/");
+                idp.loginUrl = baseUriOrigin + idpLoginFullUrl.replace("/_/", "/"+idp.alias+"/");
             }
 
             function getIdps() {
-                $http({method: 'GET', url: baseUri + 'realms/' + realm + '/theme-info/identity-providers', params : $scope.fetchParams })
+                $http({method: 'GET', url: baseUri + '/realms/' + realm + '/theme-info/identity-providers', params : $scope.fetchParams })
                     .then(
                         function(success) {
                             if(Array.isArray(success.data)) {
@@ -63,7 +65,7 @@
             }
 
             function getPromotedIdps() {
-                $http({method: 'GET', url: baseUri + 'realms/' + realm + '/theme-info/identity-providers-promoted' })
+                $http({method: 'GET', url: baseUri + '/realms/' + realm + '/theme-info/identity-providers-promoted' })
                     .then(
                         function(success) {
                             success.data.forEach(function(idp) {

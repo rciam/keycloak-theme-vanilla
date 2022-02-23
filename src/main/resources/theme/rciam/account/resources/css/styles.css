@@ -1,0 +1,49 @@
+.fa-extend {
+    background-repeat: no-repeat !important;
+    background-position: 50% center;
+    background-size: 70%;
+}
+
+
+.orcid-logo {
+    background-image: url(../img/orcid-logo.png);
+}
+
+.grnet-logo {
+    background-image: url(../img/grnet.png);
+}
+
+.login-pf {
+    background: whitesmoke !important;
+}
+
+.login-pf body {
+    background: whitesmoke !important;
+}
+
+
+.horizontal-padding-10 {
+    padding-left:10px;
+    padding-right:10px;
+}
+
+.corner-ribbon {
+    width: 200px;
+    background: #e43;
+    position: absolute;
+    top: 25px;
+    left: -50px;
+    text-align: center;
+    line-height: 40px;
+    letter-spacing: 1px;
+    color: #f0f0f0;
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+    z-index: 1000;
+}
+
+/* these are for the account theme */
+
+#main_react_container, #spinner_screen, #welcomeScreen {
+    height: 85% !important;
+}

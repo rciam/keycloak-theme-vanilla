@@ -155,8 +155,14 @@
     var resourcesCommonPath = '${url.resourcesCommonPath}';
     var resourcesPath = '${url.resourcesPath}';
 
+
+    if(baseUri.endsWith("/"))
+        baseUri = baseUri.substring(0,baseUri.lastIndexOf("/")); //remove the trailing slash
+    var baseUriOrigin = new URL(baseUri).origin;
+
+
     function getConfig() {
-        fetch(baseUri + 'realms/' + realm + '/theme-info/theme-config').then(response => response.json()).then(config => {
+        fetch(baseUri + '/realms/' + realm + '/theme-info/theme-config').then(response => response.json()).then(config => {
             applyConfig(config);
         });
     }
@@ -168,7 +174,7 @@
         var projectLogoIconUrl = config['projectLogoIconUrl'][0];
         var fullUrl = projectLogoIconUrl;
         if(!projectLogoIconUrl.trim().startsWith('http')){ //it's local path
-            fullUrl = baseUri.replace("/auth/", "") + resourcesPath + "/" + projectLogoIconUrl;
+            fullUrl = baseUriOrigin + resourcesPath + "/" + projectLogoIconUrl;
         }
         var image = createElementFromHTML("<img src='" + fullUrl + "' alt='" + realm + "' style='max-height:100px; width:auto;'>")
         var logoParentDiv = document.querySelector('#kc-header-wrapper');
@@ -181,7 +187,7 @@
             for (let i = 0; i < iconUrls.length; i++) {
                 var iconUrl = iconUrls[i];
                 if(iconUrl != null && iconUrl.length > 0){
-                    var fullUrl = baseUri.replace("/auth/", "") + resourcesPath + "/" + iconUrl;
+                    var fullUrl = baseUriOrigin + resourcesPath + "/" + iconUrl;
                     var logoUrlElem = createElementFromHTML("<img src='" + fullUrl + "' style='max-height:50px; margin: auto;' class='horizontal-padding-10'></img>");
                     logosContainerElem.appendChild(logoUrlElem);
                 }
@@ -199,7 +205,7 @@
         //set terms of use policy url (it's single config entry)
         var termsOfUseUrl = config['termsOfUseUrl'];
         var linksContainerElem = document.querySelector('#footer-links-container');
-        var defaultTOUUrl = baseUri + "realms/" + realm + "/theme-info/terms-of-use";
+        var defaultTOUUrl = baseUri + "/realms/" + realm + "/theme-info/terms-of-use";
         var termsOfUseElem = createElementFromHTML("<a class='horizontal-padding-10' href='" + defaultTOUUrl + "'>Terms</a>");
         if(termsOfUseUrl != null && termsOfUseUrl.length > 0 && termsOfUseUrl[0].length > 0){
             termsOfUseElem = createElementFromHTML("<a class='horizontal-padding-10' href='" + termsOfUseUrl[0] + "'>Terms</a>");
@@ -239,7 +245,7 @@
 
 
     function drawFooterInPlace(){
-        fetch(baseUri.replace("/auth/", "") + resourcesPath + "/elements/footer.html")
+        fetch(baseUriOrigin + resourcesPath + "/elements/footer.html")
             .then((r)=>{r.text().then((d)=>{
                 let element = createElementFromHTML(d);
                 document.getElementsByClassName("login-pf-page")[0].appendChild(element);
