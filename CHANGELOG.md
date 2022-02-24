@@ -47,3 +47,7 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version. For e
 ### Changed
 - Reassembled the header (project icon) and footer to be applied on all template-inheriting login ftl pages. 
 - Extended the OIDC consent screen (RCIAM-791)
+
+## [v3.0.0] - 24-2-2022
+### Added
+- Theme now was extended to also modify the user account management pages. It now offers the option to modify (per-realm) the footer and the logo icons.  

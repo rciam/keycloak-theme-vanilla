@@ -5,9 +5,14 @@ This is the vanilla theme for rciam installations.
 :red_circle: **IMPORTANT**:
 Please note that this theme needs a custom modification on core keycloak code in order to work. Contact the development team for instructions.
 
-## Screenshot
-![screenshot](screenshot.png)
-    
+## Screenshots
+
+### Login theme
+![screenshot_login](screenshot_login.png)
+
+### Account theme
+![screenshot_account](screenshot_account.png)
+
 ## Installation instructions:
 
 ### Releases 1.x.x
@@ -90,6 +95,7 @@ The expected body payload for the POST requests should be similar to the termsof
 |  v2.1.0 | v15.0.2-r1.0.6 + |
 |  v2.2.0 | v15.0.2-r1.0.6 + |
 |  v2.3.0 | v16.1.0-rc1.0.1 + |
+|  v3.0.0 | v16.1.0-rc1.0.1 + |
 
 ## License
 
