@@ -3,7 +3,10 @@
 This is the vanilla theme for rciam installations.
 
 :red_circle: **IMPORTANT**:
-Please note that this theme needs a custom modification on core keycloak code in order to work. Contact the development team for instructions.
+Please note that this theme needs a custom modification on core keycloak code in order to work. 
+The [theme releases](https://github.com/rciam/keycloak-theme-vanilla/releases) are compatible with these [keycloak releases](https://github.com/eosc-kc/keycloak/releases), as presented in the compatibility matrix [at the end of this page](https://github.com/rciam/keycloak-theme-vanilla/edit/master/README.md#compatibility-matrix)
+
+Contact the development team for instructions.
 
 ## Screenshots
 
@@ -85,6 +88,8 @@ The expected body payload for the POST requests should be similar to the termsof
 
 
 ## Compatibility matrix
+
+This theme is compatible with the custom releases of keycloak which can be found [here](https://github.com/eosc-kc/keycloak/releases) 
 
 |  Theme version | Keycloak version |
 |---|---|
