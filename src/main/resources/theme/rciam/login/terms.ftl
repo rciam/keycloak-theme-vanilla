@@ -6,7 +6,7 @@
         Array.from(document.getElementsByClassName("card-pf")).forEach(elem => { elem.style.maxWidth = 1000 })
         Array.from(document.getElementsByClassName("login-pf-header")).forEach(elem => elem.remove());
         Array.from(document.getElementsByClassName("login-pf-page")).forEach(elem => { elem.style.paddingBottom = 50 });
-        document.getElementById("kc-terms-text").innerHTML = "<iframe id='tou-frame' frameborder='0' style='position: relative;  width: 100%;' src=" + baseUri + 'realms/' + realm + '/theme-info/terms-of-use?complete=true' +" title='Terms of use'>";
+        document.getElementById("kc-terms-text").innerHTML = "<iframe id='tou-frame' frameborder='0' style='position: relative;  width: 100%;' src=" + baseUri + '/realms/' + realm + '/theme-info/terms-of-use?complete=true' +" title='Terms of use'>";
         var iframe = document.getElementById("tou-frame");
         iframe.onload = function(){
             iframe.style.height = (iframe.contentWindow.document.body.scrollHeight + 70) + 'px';
