@@ -28,10 +28,9 @@ function applyConfig(config){
     if(!projectLogoIconUrl.trim().startsWith('http')){ //it's local path
         fullUrl = baseUriOrigin + resourcesPath + "/" + projectLogoIconUrl;
     }
-    var image = createElementFromHTML("<img src='" + fullUrl + "' alt='" + realm + "' style='max-height:100px; width:auto;'>")
     var logoParentDivs = [document.querySelector('#brandLink'), document.querySelector('#landingLogo')];
     for(let logoParentDiv of logoParentDivs){
-        var image = createElementFromHTML("<img src='" + fullUrl + "' alt='" + realm + "' style='max-height:100px; width:auto;'>")
+        var image = createElementFromHTML("<img src='" + fullUrl + "' alt='" + realm + "' style='height:75px; width:auto;'>")
         logoParentDiv.appendChild(image);
     }
 

@@ -101,6 +101,7 @@ This theme is compatible with the custom releases of keycloak which can be found
 |  v2.2.0 | v15.0.2-r1.0.6 + |
 |  v2.3.0 | v16.1.0-rc1.0.1 + |
 |  v3.0.0 | v16.1.0-rc1.0.1 + |
+|  v3.0.1 | v16.1.0-rc1.0.1 + |
 
 ## License
 
