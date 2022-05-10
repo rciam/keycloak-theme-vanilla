@@ -63,11 +63,13 @@ import javax.ws.rs.core.UriInfo;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -160,12 +162,10 @@ public class ThemeResourceProvider implements RealmResourceProvider {
         if(firstResult < 0 || maxResults < 0)
             throw new BadRequestException("Should specify params firstResult and maxResults to be >= 0");
         RealmModel realm = session.getContext().getRealm();
-        final String lowercaseKeyword = keyword.toLowerCase();
+
+        final String lowercaseKeyword = toLowerCaseWithoutAccents(keyword);
         List<IdentityProviderModel> identityProviders = realm.getIdentityProvidersStream()
-                .filter(idp -> {
-                    String name = idp.getDisplayName() == null ? "" : idp.getDisplayName();
-                    return name.toLowerCase().contains(lowercaseKeyword) || idp.getAlias().toLowerCase().contains(lowercaseKeyword);
-                })
+                .filter(idp -> toLowerCaseWithoutAccents(idp.getDisplayName()).contains(lowercaseKeyword) || idp.getAlias().toLowerCase().contains(lowercaseKeyword))
                 .skip(firstResult)
                 .limit(maxResults)
                 .collect(Collectors.toList());
@@ -184,6 +184,12 @@ public class ThemeResourceProvider implements RealmResourceProvider {
         return idpBean.getProviders()!=null ? idpBean.getProviders() : new ArrayList<>();
     }
 
+    private String toLowerCaseWithoutAccents(String text){
+        if ( text ==null )
+                return "";
+        String finalStr = Normalizer.normalize(text.toLowerCase(), Normalizer.Form.NFD);
+        return Pattern.compile("\\p{InCombiningDiacriticalMarks}+").matcher(finalStr).replaceAll("");
+    }
 
     /**
      * This should be used from login pages to show any promoted identity providers of the realm for logging in with.
