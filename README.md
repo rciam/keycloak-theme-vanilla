@@ -58,10 +58,9 @@ Find the ```<subsystem xmlns="urn:jboss:domain:keycloak-server:1.1">``` node.
 
 Download the keycloak-theme-vanilla.jar from the [releases page](https://github.com/rciam/keycloak-theme-vanilla/releases).
 
-Just drop the jar file into the $KEYCLOAK_BASE/standalone/deployments/ folder.
+Just drop the jar file into the $KEYCLOAK_BASE/standalone/deployments/ folder. Wait for wildfly to auto-deploy the jar file.
 
-Wait for wildfly to auto-deploy the jar file.
-
+For Keycloak X (after version 18.0.0), just drop the jar file into the $KEYCLOAK_BASE/providers/ folder.
 
 ## Modifying the theme at runtime (for releases  >= 2.0.0 )
 
