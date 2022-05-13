@@ -17,6 +17,8 @@
             <module name="org.apache.commons.lang"/>
             <module name="com.fasterxml.jackson.core.jackson-core"/>
             <module name="com.fasterxml.jackson.core.jackson-databind"/>
+            <module name="org.infinispan"/>
+            <module name="org.infinispan.commons"/>
         </dependencies>
 
     </deployment>

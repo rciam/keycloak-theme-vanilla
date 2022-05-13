@@ -48,6 +48,11 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-core</artifactId>
+            <version>11.0.9.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
             <artifactId>infinispan-commons</artifactId>
             <version>11.0.9.Final</version>
             <scope>provided</scope>

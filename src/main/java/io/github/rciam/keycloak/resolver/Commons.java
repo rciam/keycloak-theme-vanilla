@@ -18,9 +18,10 @@ public class Commons {
     public static final String THEME_WORKING_FOLDER = "standalone/theme-config";
     public static final String TERMS_OF_USE_FOLDER = "terms-of-use";
     public static final String CONFIGURATIONS_FOLDER = "configurations";
+    public static final String RESOURCES_FOLDER = "resources";
 
     /**
-     * Uses either "JBOSS_HOME" or (as a failback, when not running in wildfly) "HOME"
+     * Uses either "JBOSS_HOME" or (as a fallback, when not running in wildfly) "HOME"
      */
     public static String getBasePath(){
         if(basePath != null)
@@ -35,7 +36,7 @@ public class Commons {
 
 
     public static void writeFile(String filepath, String content) throws IOException {
-        Files.write(Paths.get(filepath), content.getBytes());
+        writeFile(filepath, content.getBytes());
     }
 
     public static String readFile(String filepath) throws IOException {
@@ -48,6 +49,26 @@ public class Commons {
         Pattern pattern = Pattern.compile(regex.toString(), flags);
         Matcher matcher = pattern.matcher(htmlStr);
         return matcher.replaceAll("");
+    }
+
+    public static void writeFile(String filepath, byte[] content) throws IOException {
+        Files.write(Paths.get(filepath), content);
+    }
+
+    public static byte[] readRawFile(String filepath) throws IOException {
+        return new File(filepath).exists() ? Files.readAllBytes(Paths.get(filepath)) : null;
+    }
+
+
+    /**
+     * USE WITH EXTREME CARE
+     */
+    public static boolean deleteFolderAndContents(File folder) {
+        File[] allContents = folder.listFiles();
+        if (allContents != null)
+            for (File file : allContents)
+                deleteFolderAndContents(file);
+        return folder.delete();
     }
 
 }
