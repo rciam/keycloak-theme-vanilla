@@ -17,12 +17,14 @@
 
 package io.github.rciam.keycloak.rest;
 
+import io.github.rciam.keycloak.resolver.Resources;
 import io.github.rciam.keycloak.resolver.TermsOfUse;
 import io.github.rciam.keycloak.resolver.ThemeConfig;
 import io.github.rciam.keycloak.resolver.stubs.Configuration;
-import org.checkerframework.checker.units.qual.A;
+import io.github.rciam.keycloak.resolver.stubs.cache.CacheKey;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.spi.ResteasyProviderFactory;
+import org.jboss.resteasy.plugins.providers.multipart.InputPart;
+import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.forms.login.freemarker.model.IdentityProviderBean;
@@ -39,7 +41,6 @@ import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.managers.RealmManager;
 import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.services.resources.admin.AdminAuth;
-import org.keycloak.services.resources.admin.AdminRoot;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
 import org.keycloak.sessions.AuthenticationSessionModel;
@@ -58,10 +59,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -83,6 +85,7 @@ public class ThemeResourceProvider implements RealmResourceProvider {
     private KeycloakSession session;
     private static ThemeConfig themeConfig;
     private static TermsOfUse termsOfUse;
+    private static Resources resources;
 
     public ThemeResourceProvider(KeycloakSession session) {
         this.session = session;
@@ -92,6 +95,9 @@ public class ThemeResourceProvider implements RealmResourceProvider {
         }
         if (termsOfUse == null) {
             termsOfUse = new TermsOfUse(session);
+        }
+        if (resources == null) {
+            resources = new Resources(session);
         }
     }
 
@@ -140,6 +146,59 @@ public class ThemeResourceProvider implements RealmResourceProvider {
         if(!isRealmManager(headers))
             return Response.status(401).build();
         termsOfUse.setTermsOfUse(session.getContext().getRealm().getName(), termsOfUseHtml);
+        return Response.status(201).build();
+    }
+
+
+    @GET
+    @Path("/resource/{filename}")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response getResource(@PathParam("filename") String filename) {
+        RealmModel realm = session.getContext().getRealm();
+        byte[] data = resources.getResource(new CacheKey(realm.getName(), filename));
+
+        if(data == null)
+            return Response.status(404).entity("Could not find the resource "+filename).build();
+
+        return Response.ok()
+//                .header("Content-Type", MediaType.IMAGE_JPEG_VALUE)
+                .header("Content-Disposition","attachment; filename=\"" + filename + "\"")
+//                .header("Content-Length", data.length)
+                .entity(data)
+                .build();
+    }
+
+    @POST
+    @Path("/resource/{filename}")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response setResource(@Context final HttpHeaders headers, @PathParam("filename") String filename, MultipartFormDataInput input) {
+        if(!isRealmManager(headers))
+            return Response.status(401).build();
+        RealmModel realm = session.getContext().getRealm();
+        Map<String, List<InputPart>> uploadForm = input.getFormDataMap();
+        if(uploadForm.size() == 0)
+            return Response.status(400).entity("Should have one file uploaded. Please attach the file content in the multimap for the file "+ filename).build();
+        if(uploadForm.size() > 1)
+            return Response.status(400).entity("Should have ONLY ONE file uploaded at a time. Please attach a file in the multimap for the file "+filename).build();
+
+        Map.Entry<String, List<InputPart>> fileEntry = uploadForm.entrySet().stream().findFirst().get();
+
+        for (InputPart inputPart : fileEntry.getValue()) {
+
+            try {
+                MultivaluedMap<String, String> header = inputPart.getHeaders();
+                InputStream inputStream = inputPart.getBody(InputStream.class, null);
+
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                int temp;
+                byte[] buffer = new byte[1000];
+                while ((temp = inputStream.read(buffer)) != -1)
+                    byteArrayOutputStream.write(buffer, 0, temp);
+                resources.saveFilesystemResource(realm.getName(), filename, byteArrayOutputStream.toByteArray());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         return Response.status(201).build();
     }
 
