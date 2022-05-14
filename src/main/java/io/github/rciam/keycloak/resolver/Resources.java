@@ -277,6 +277,7 @@ public class Resources {
     }
 
     public void saveFilesystemResource(String realmName, String resourceName, byte[] data) {
+        createRealmResourcesFolder(realmName);
         String path = getResourceFilePath(realmName, resourceName);
         try {
             Commons.writeFile(path, data);
