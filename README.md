@@ -79,12 +79,45 @@ For each realm it maintains two files:
 
 Alternatively, an admin could use the following endpoints:
 
-* https://<HOSTNAME>/auth/realms/<REALM_NAME>/theme-info/terms-of-use  (HTTP-GET or HTTP-POST to fetch or set/update the theme's terms of use for the realm)
-* https://<HOSTNAME>/auth/realms/<REALM_NAME>/theme-info/theme-config  (HTTP-GET or HTTP-POST to fetch or set/update the theme's config for the realm)
+* https://<HOST_NAME>/auth/realms/<REALM_NAME>/theme-info/terms-of-use  (HTTP-GET or HTTP-POST to fetch or set/update the theme's terms of use for the realm)
+* https://<HOST_NAME>/auth/realms/<REALM_NAME>/theme-info/theme-config  (HTTP-GET or HTTP-POST to fetch or set/update the theme's config for the realm)
 
 Both endpoints require for the HTTP-POST a valid admin token (Authorization: "Bearer <VALID_ADMIN_TOKEN>"), or the call will be rejected with a http 401 code.
 
 The expected body payload for the POST requests should be similar to the termsofuse.html file (that's the theme's default terms of use file) and the configuration.json file (that's the default template configuration).
+
+
+## Adding static files  (for releases  >= 4.0.0 )
+
+Since v.4.0.0, the theme has the ability to serve static files (any filetype), just like a fileserver.
+
+The theme also uses a cache to speed up file serving for the most commonly requested files, with size smaller than 1ΜΒ. Larger than 1MB files are always fetched from the filesystem. 
+
+There are 2 ways to define the files to serve (a) by uploading them as a multipart/form-data on each keycloak node, or (b) by adding them into a folder under the $KEYCLOAK_BASE/standalone/theme-config/resources/<REALM_NAME>/
+
+### Way 1
+
+To set/register a file into the embedded file repo, you need to send a POST request at the endpoint
+
+**https://<HOST_NAME>/auth/realms/<REALM_NAME>/theme-info/resource/<FILE_NAME>**
+
+with a single form key (with any key name, since key name is ignored) containing the file. 
+
+**NOTE:** This must be issued on each node of keycloak. So, this will not work if you are sending this at a reverse proxy / load balancer serving more than 1 nodes.
+
+To get the registered file, you can achive that by sending a HTTP GET request at the same endpoint 
+
+**https://<HOST_NAME>/auth/realms/<REALM_NAME>/theme-info/resource/<FILE_NAME>**
+
+
+### Way 2
+
+If you have access to the running keycloak node instance, you can add a file at runtime under the folder  
+
+**$KEYCLOAK_BASE/standalone/theme-config0/resources/<REALM_NAME>/**
+
+and the keycloak theme will pick up any file instantly (it utilizes file listerners). 
+
 
 
 ## Compatibility matrix
@@ -102,6 +135,7 @@ This theme is compatible with the custom releases of keycloak which can be found
 |  v2.3.0 | v16.1.0-rc1.0.1 + |
 |  v3.0.0 | v16.1.0-rc1.0.1 + |
 |  v3.0.1 | v16.1.0-rc1.0.1 + |
+|  v4.0.0 | v16.1.0-rc1.0.1 + |
 
 ## License
 
