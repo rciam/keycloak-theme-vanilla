@@ -69,7 +69,7 @@ Since v.2.0.0, the theme has two different ways to edit its configuration per re
 
 ### Way 1
 
-An admin could edit the generated files under the $KEYCLOAK_BASE/standalone/theme-config folder.
+An admin could edit the generated files under the $KEYCLOAK_BASE/standalone/theme-c`onfig folder.
 
 For each realm it maintains two files:
 * a **terms-of-use/<REALM_NAME>.html** file which contains the html file with the realm-specific terms of use
@@ -114,7 +114,7 @@ To get the registered file, you can achive that by sending a HTTP GET request at
 
 If you have access to the running keycloak node instance, you can add a file at runtime under the folder  
 
-**$KEYCLOAK_BASE/standalone/theme-config0/resources/<REALM_NAME>/**
+**$KEYCLOAK_BASE/standalone/theme-config/resources/<REALM_NAME>/**
 
 and the keycloak theme will pick up any file instantly (it utilizes file listerners). 
 
