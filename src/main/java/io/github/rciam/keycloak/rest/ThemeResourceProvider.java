@@ -22,6 +22,7 @@ import io.github.rciam.keycloak.resolver.TermsOfUse;
 import io.github.rciam.keycloak.resolver.ThemeConfig;
 import io.github.rciam.keycloak.resolver.stubs.Configuration;
 import io.github.rciam.keycloak.resolver.stubs.cache.CacheKey;
+import io.github.rciam.keycloak.resolver.stubs.rest.IdpPageResult;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
@@ -210,7 +211,7 @@ public class ThemeResourceProvider implements RealmResourceProvider {
     @GET
     @Path("/identity-providers")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<IdentityProviderBean.IdentityProvider> getIdentityProviders(
+    public IdpPageResult getIdentityProviders(
             @QueryParam("keyword") @DefaultValue("") String keyword,
             @QueryParam("first") @DefaultValue("0") Integer firstResult,
             @QueryParam("max") @DefaultValue("2147483647") Integer maxResults,
@@ -229,6 +230,8 @@ public class ThemeResourceProvider implements RealmResourceProvider {
                 .limit(maxResults)
                 .collect(Collectors.toList());
 
+        int firstResultSize = identityProviders.size();
+
         //this translates to http 204 code (instead of an empty list's 200). Is used to specify that its a end-of-stream.
         if(identityProviders.isEmpty())
             return null;
@@ -240,7 +243,9 @@ public class ThemeResourceProvider implements RealmResourceProvider {
         //Expose through the Bean, because it makes some extra processing. URI is re-composed back in the UI, so we can ignore here
         //returns empty list if all idps are filtered out, and not null. This is important for the UI
         IdentityProviderBean idpBean = new IdentityProviderBean(realm, session, identityProviders, URI.create(""));
-        return idpBean.getProviders()!=null ? idpBean.getProviders() : new ArrayList<>();
+        return idpBean.getProviders() != null ?
+                new IdpPageResult(idpBean.getProviders(), firstResultSize - idpBean.getProviders().size()) :
+                new IdpPageResult(new ArrayList<>(), firstResultSize);
     }
 
     private String toLowerCaseWithoutAccents(String text){

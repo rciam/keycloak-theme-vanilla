@@ -44,11 +44,12 @@
                 $http({method: 'GET', url: baseUri + '/realms/' + realm + '/theme-info/identity-providers', params : $scope.fetchParams })
                     .then(
                         function(success) {
-                            if(Array.isArray(success.data)) {
-                                success.data.forEach(function(idp) {
+                            if(success.data != null && Array.isArray(success.data.identityProviders)){
+                                success.data.identityProviders.forEach(function(idp) {
                                     setLoginUrl(idp);
                                     $scope.idps.push(idp);
                                 });
+                                $scope.hiddenIdps = success.data.hiddenIdps;
                             }
                             else {
                                 $scope.reachedEndPage = true;
@@ -100,6 +101,7 @@
                 function handleChange(newValue, oldValue) {
                   if (newValue !== oldValue) {
                     $scope.idps = [];
+                    $scope.hiddenIdps = 0;
                     $scope.fetchParams.first = 0;
                     $scope.totalIdpsAskedFor = 0;
                     $scope.reachedEndPage = false;
@@ -196,7 +198,7 @@
                 <hr/>
                 <h4>${msg("identity-provider-login-label")}</h4>
 
-                <div ng-if="(idps.length>=fetchParams.max && fetchParams.keyword==null) || fetchParams.keyword!=null">
+                <div ng-if="(idps.length + hiddenIdps >= fetchParams.max && fetchParams.keyword==null) || fetchParams.keyword!=null">
                     <input id="kc-providers-filter" type="text" placeholder="Search..." ng-model="fetchParams.keyword" ng-keypress="applySearch($event)">
                     <i class="fa fa-search" id="kc-providers-filter-button" data-ng-click="applySearch(null)"> </i>
                 </div>
