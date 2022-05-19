@@ -40,15 +40,23 @@
             $scope.hiddenIdps = 0;
             $scope.totalIdpsAskedFor = 0;
             $scope.reachedEndPage = false;
+            $scope.latestSearch = {};  //for sync purposes
 
             function setLoginUrl(idp){
                 idp.loginUrl = baseUriOrigin + idpLoginFullUrl.replace("/_/", "/"+idp.alias+"/");
             }
 
             function getIdps() {
+                var submissionTimestamp = new Date().getTime(); //to let the current values be accessible within the callbacks
+                var searchParams = $scope.fetchParams; //to let the current values be accessible within the callbacks
+                $scope.latestSearch = { submissionTimestamp: submissionTimestamp, searchParams: searchParams };
                 $http({method: 'GET', url: baseUri + '/realms/' + realm + '/theme-info/identity-providers', params : $scope.fetchParams })
                     .then(
                         function(success) {
+                            //if we have typed fast multiple chars in the searchbox and the search results delay, this might end up appending duplicate values. prevent it
+                            if((searchParams.first == 0) && (submissionTimestamp != $scope.latestSearch.submissionTimestamp)) { //reject the results, there is a newer search
+                                return;
+                            }
                             if(success.data != null && Array.isArray(success.data.identityProviders)){
                                 success.data.identityProviders.forEach(function(idp) {
                                     setLoginUrl(idp);
@@ -109,6 +117,7 @@
                     $scope.fetchParams.first = 0;
                     $scope.totalIdpsAskedFor = 0;
                     $scope.reachedEndPage = false;
+                    $scope.latestSearch = { timestamp: new Date().getTime(), keyword: newValue };
                     getIdps();
                   }
                 }
