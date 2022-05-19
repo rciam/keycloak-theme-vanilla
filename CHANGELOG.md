@@ -59,3 +59,7 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version. For e
 ## [v4.0.0] - 16-5-2022
 ### Added
 The theme now has the ability to serve static files (of any type), like a webserver. More information can be found in the README.md file.
+
+## [v4.0.1] - 19-5-2022
+### Changed
+- Bugfix - In the WAYF IdP listing, if in the first resultset there is at least one hidden IdP, the search bar becomes hidden.
