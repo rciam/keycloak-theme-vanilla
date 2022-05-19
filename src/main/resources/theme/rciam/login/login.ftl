@@ -41,6 +41,7 @@
             $scope.totalIdpsAskedFor = 0;
             $scope.reachedEndPage = false;
             $scope.latestSearch = {};  //for sync purposes
+            $scope.isSearching = false;
 
             function setLoginUrl(idp){
                 idp.loginUrl = baseUriOrigin + idpLoginFullUrl.replace("/_/", "/"+idp.alias+"/");
@@ -50,6 +51,7 @@
                 var submissionTimestamp = new Date().getTime(); //to let the current values be accessible within the callbacks
                 var searchParams = $scope.fetchParams; //to let the current values be accessible within the callbacks
                 $scope.latestSearch = { submissionTimestamp: submissionTimestamp, searchParams: searchParams };
+                $scope.isSearching = true;
                 $http({method: 'GET', url: baseUri + '/realms/' + realm + '/theme-info/identity-providers', params : $scope.fetchParams })
                     .then(
                         function(success) {
@@ -57,6 +59,7 @@
                             if((searchParams.first == 0) && (submissionTimestamp != $scope.latestSearch.submissionTimestamp)) { //reject the results, there is a newer search
                                 return;
                             }
+                            $scope.isSearching = false;
                             if(success.data != null && Array.isArray(success.data.identityProviders)){
                                 success.data.identityProviders.forEach(function(idp) {
                                     setLoginUrl(idp);
@@ -70,6 +73,7 @@
                             $scope.totalIdpsAskedFor += $scope.fetchParams.max;
                         },
                         function(error){
+                            $scope.isSearching = false;
                         }
                     );
             }
@@ -197,6 +201,8 @@
 
 
       <div ng-app="angularLoginPart" ng-controller="idpListing">
+
+        <img id='spinner' src='${url.resourcesPath}/img/spinner.svg' class='centered' ng-class="{'hidden' : !isSearching }" />
 
         <div ng-if="promotedIdps!=null && promotedIdps.length>0" id="kc-social-providers" class="${properties.kcFormSocialAccountSectionClass!}">
             <hr/>
