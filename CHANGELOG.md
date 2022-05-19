@@ -63,3 +63,9 @@ The theme now has the ability to serve static files (of any type), like a webser
 ## [v4.0.1] - 19-5-2022
 ### Changed
 - Bugfix - In the WAYF IdP listing, if in the first resultset there is at least one hidden IdP, the search bar becomes hidden.
+
+## [v4.0.2] - 19-5-2022
+### Added
+- Spinner while searching/filtering IdPs in WAYF 
+### Changed
+- Bugfix RCIAM-738: Fixes duplicate entry listing in WAYF search as you type
