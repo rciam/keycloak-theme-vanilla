@@ -203,7 +203,7 @@
       <div ng-app="angularLoginPart" ng-controller="idpListing">
 
         <div style="height:0px; position: relative; top: 50%; left: 50%;">
-            <img id='spinner' src='${url.resourcesPath}/img/spinner.svg' ng-class="{'hidden' : !isSearching } style="position: relative; transform: translate(-50%, -50%); width:100px; height:100px;" />
+            <img id='spinner' src='${url.resourcesPath}/img/spinner.svg' ng-class="{'hidden' : !isSearching }" style="position: relative; transform: translate(-50%, -50%); width:100px; height:100px;" />
         </div>
 
         <div ng-if="promotedIdps!=null && promotedIdps.length>0" id="kc-social-providers" class="${properties.kcFormSocialAccountSectionClass!}">
