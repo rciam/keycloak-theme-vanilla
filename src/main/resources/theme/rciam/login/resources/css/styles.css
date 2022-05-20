@@ -42,10 +42,16 @@
     z-index: 1000;
 }
 
-.centered {
-    position: fixed;
+.spinner-container{
+    width:0px;
+    height:0px;
+    position: relative;
     top: 50%;
     left: 50%;
+}
+
+.spinner{
+    position: relative;
     transform: translate(-50%, -50%);
 }
 
