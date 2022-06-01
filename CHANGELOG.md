@@ -69,3 +69,7 @@ The theme now has the ability to serve static files (of any type), like a webser
 - Spinner while searching/filtering IdPs in WAYF 
 ### Changed
 - Bugfix RCIAM-738: Fixes duplicate entry listing in WAYF search as you type
+
+## [v4.0.3] - 1-6-2022
+### Changed
+- Searches also for QUARKUS_HOME as an alternative for app's base path

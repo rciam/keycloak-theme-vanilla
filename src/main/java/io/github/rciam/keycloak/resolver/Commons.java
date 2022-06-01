@@ -21,12 +21,14 @@ public class Commons {
     public static final String RESOURCES_FOLDER = "resources";
 
     /**
-     * Uses either "JBOSS_HOME" or (as a fallback, when not running in wildfly) "HOME"
+     * Uses either "JBOSS_HOME" or "QUARKUS_HOME", and if none of them available, uses "HOME"
      */
     public static String getBasePath(){
         if(basePath != null)
             return basePath;
         basePath = System.getenv("JBOSS_HOME");
+        if(basePath == null || basePath.isEmpty())
+            basePath = System.getenv("QUARKUS_HOME");
         if(basePath == null || basePath.isEmpty())
             basePath = System.getenv("HOME");
         basePath = basePath.endsWith(File.separator) ? basePath.substring(0, basePath.length() - 1) : basePath;
