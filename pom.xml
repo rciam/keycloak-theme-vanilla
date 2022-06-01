@@ -12,7 +12,8 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <keycloak.version>15.0.2</keycloak.version>
+        <keycloak.version>18.0.0</keycloak.version>
+        <infinispan.version>12.1.7.Final</infinispan.version>
     </properties>
 
     <organization>
@@ -49,18 +50,14 @@
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-core</artifactId>
-            <version>11.0.9.Final</version>
+            <version>${infinispan.version}</version>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-commons</artifactId>
-            <version>11.0.9.Final</version>
+            <version>${infinispan.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!--        <dependency>-->
-<!--            <groupId>org.apache.commons</groupId>-->
-<!--            <artifactId>commons-lang3</artifactId>-->
-<!--        </dependency>-->
     </dependencies>
 
 

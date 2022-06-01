@@ -58,10 +58,9 @@ Find the ```<subsystem xmlns="urn:jboss:domain:keycloak-server:1.1">``` node.
 
 Download the keycloak-theme-vanilla.jar from the [releases page](https://github.com/rciam/keycloak-theme-vanilla/releases).
 
-Just drop the jar file into the $KEYCLOAK_BASE/standalone/deployments/ folder.
+Just drop the jar file into the $KEYCLOAK_BASE/standalone/deployments/ folder. Wait for wildfly to auto-deploy the jar file.
 
-Wait for wildfly to auto-deploy the jar file.
-
+For Keycloak X (after version 18.0.0), just drop the jar file into the $KEYCLOAK_BASE/providers/ folder.
 
 ## Modifying the theme at runtime (for releases  >= 2.0.0 )
 
@@ -69,7 +68,7 @@ Since v.2.0.0, the theme has two different ways to edit its configuration per re
 
 ### Way 1
 
-An admin could edit the generated files under the $KEYCLOAK_BASE/standalone/theme-c`onfig folder.
+An admin could edit the generated files under the $KEYCLOAK_BASE/standalone/theme-config folder.
 
 For each realm it maintains two files:
 * a **terms-of-use/<REALM_NAME>.html** file which contains the html file with the realm-specific terms of use
@@ -124,18 +123,19 @@ and the keycloak theme will pick up any file instantly (it utilizes file listern
 
 This theme is compatible with the custom releases of keycloak which can be found [here](https://github.com/eosc-kc/keycloak/releases) 
 
-|  Theme version | Keycloak version |
-|---|---|
-|  v1.0.0 | v15.0.2-r1.0.(1-4) |
-|  v1.1.0 | v15.0.2-r1.0.(1-4) |
-|  v1.2.0 | v15.0.2-r1.0.5 + |
-|  v2.0.0 | v15.0.2-r1.0.6 + |
-|  v2.1.0 | v15.0.2-r1.0.6 + |
-|  v2.2.0 | v15.0.2-r1.0.6 + |
-|  v2.3.0 | v16.1.0-rc1.0.1 + |
-|  v3.0.0 | v16.1.0-rc1.0.1 + |
-|  v3.0.1 | v16.1.0-rc1.0.1 + |
-|  v4.0.0 | v16.1.0-rc1.0.1 + |
+| Theme version | Keycloak version |
+|---------------|-------------------|
+| v1.0.0        | v15.0.2-r1.0.(1-4) |
+| v1.1.0        | v15.0.2-r1.0.(1-4) |
+| v1.2.0        | v15.0.2-r1.0.5 + |
+| v2.0.0        | v15.0.2-r1.0.6 + |
+| v2.1.0        | v15.0.2-r1.0.6 + |
+| v2.2.0        | v15.0.2-r1.0.6 + |
+| v2.3.0        | v16.1.0-rc1.0.1 + |
+| v3.0.0        | v16.1.0-rc1.0.1 + |
+| v3.0.1        | v16.1.0-rc1.0.1 + |
+| v4.0.0        | v16.1.0-rc1.0.1 + |
+| v4.0.3        | v16.1.0-rc1.0.1 + |
 
 ## License
 
