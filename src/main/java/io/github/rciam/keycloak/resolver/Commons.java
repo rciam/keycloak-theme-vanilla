@@ -15,7 +15,7 @@ public class Commons {
     private static final Logger logger = Logger.getLogger(Commons.class);
 
     private static String basePath;
-    public static final String THEME_WORKING_FOLDER = "standalone/theme-config";
+    public static final String THEME_WORKING_FOLDER = "theme-config";
     public static final String TERMS_OF_USE_FOLDER = "terms-of-use";
     public static final String CONFIGURATIONS_FOLDER = "configurations";
     public static final String RESOURCES_FOLDER = "resources";
