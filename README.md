@@ -6,6 +6,9 @@ This is the vanilla theme for rciam installations.
 Please note that this theme needs a custom modification on core keycloak code in order to work. 
 The [theme releases](https://github.com/rciam/keycloak-theme-vanilla/releases) are compatible with these [keycloak releases](https://github.com/eosc-kc/keycloak/releases), as presented in the compatibility matrix [at the end of this page](https://github.com/rciam/keycloak-theme-vanilla/edit/master/README.md#compatibility-matrix)
 
+The theme also requires one of the following env variables: { JBOSS_HOME | QUARKUS_HOME | HOME } to store its configuration files.
+
+
 Contact the development team for instructions.
 
 ## Screenshots
@@ -135,7 +138,7 @@ This theme is compatible with the custom releases of keycloak which can be found
 | v3.0.0        | v16.1.0-rc1.0.1 + |
 | v3.0.1        | v16.1.0-rc1.0.1 + |
 | v4.0.0        | v16.1.0-rc1.0.1 + |
-| v4.0.3        | v16.1.0-rc1.0.1 + |
+| v4.1.0        | v16.1.0-rc1.0.1 + |
 
 ## License
 
