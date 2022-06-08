@@ -19,6 +19,8 @@
             <module name="com.fasterxml.jackson.core.jackson-databind"/>
             <module name="org.infinispan"/>
             <module name="org.infinispan.commons"/>
+            <module name="org.jboss.resteasy.resteasy-multipart-provider"/>
+            <module name="org.keycloak.keycloak-model-infinispan"/>
         </dependencies>
 
     </deployment>

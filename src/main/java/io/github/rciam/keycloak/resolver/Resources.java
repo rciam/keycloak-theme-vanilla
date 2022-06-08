@@ -3,8 +3,6 @@ package io.github.rciam.keycloak.resolver;
 import io.github.rciam.keycloak.exception.InaccessibleFileException;
 import io.github.rciam.keycloak.exception.InvalidPathException;
 import io.github.rciam.keycloak.resolver.stubs.cache.CacheKey;
-import io.github.rciam.keycloak.resolver.stubs.cluster.RealmCreatedEvent;
-import io.github.rciam.keycloak.resolver.stubs.cluster.RealmDeletedEvent;
 import org.infinispan.Cache;
 import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.configuration.cache.Configuration;
@@ -17,6 +15,8 @@ import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.cache.infinispan.events.RealmRemovedEvent;
+import org.keycloak.models.cache.infinispan.events.RealmUpdatedEvent;
 
 import java.io.File;
 import java.io.IOException;
@@ -117,6 +117,7 @@ public class Resources {
             //register local listener
             session.getKeycloakSessionFactory().register(event -> {
                 if(event instanceof RealmModel.RealmCreationEvent) {
+                    String realmId = ((RealmModel.RealmCreationEvent)event).getCreatedRealm().getId();
                     String realmName = ((RealmModel.RealmCreationEvent)event).getCreatedRealm().getName();
                     //create realm folder (if not exists)
                     createRealmResourcesFolder(realmName);
@@ -128,9 +129,10 @@ public class Resources {
                         logger.error(String.format("Theme: Could not monitor folder %s for file changes. Expect serious problem with the terms of use in the UI", getResourcesFolderPathOfRealm(realmName)));
                     }
 
-                    cluster.notify(CREATE_RESOURCE, RealmCreatedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_BUT_LOCAL_DC); //broadcast creation event to all other cluster nodes
+                    cluster.notify(CREATE_RESOURCE, RealmUpdatedEvent.create(realmId, realmName), true, ClusterProvider.DCNotify.ALL_BUT_LOCAL_DC); //broadcast creation event to all other cluster nodes
                 }
                 else if(event instanceof RealmModel.RealmRemovedEvent) {
+                    String realmId = ((RealmModel.RealmRemovedEvent)event).getRealm().getId();
                     String realmName = ((RealmModel.RealmRemovedEvent)event).getRealm().getName();
                     //remove the file listener
                     deregisterWatch(realmName);
@@ -140,32 +142,32 @@ public class Resources {
                     //remove the whole dir contents
                     Commons.deleteFolderAndContents(new File(getResourcesFolderPathOfRealm(realmName)));
 
-                    cluster.notify(DELETE_RESOURCE, RealmDeletedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_BUT_LOCAL_DC); //broadcast deletion event to all other cluster nodes
+                    cluster.notify(DELETE_RESOURCE, RealmRemovedEvent.create(realmId, realmName), true, ClusterProvider.DCNotify.ALL_BUT_LOCAL_DC); //broadcast deletion event to all other cluster nodes
                 }
             });
 
             //register cluster listeners (these are events coming from the other nodes)
             cluster.registerListener(CREATE_RESOURCE, (ClusterEvent event) -> {
-                RealmCreatedEvent realmCreatedEvent = (RealmCreatedEvent) event;
+                RealmUpdatedEvent realmUpdatedEvent = (RealmUpdatedEvent) event;
                 //create realm folder (if not exists)
-                createRealmResourcesFolder(realmCreatedEvent.getRealmName());
+                createRealmResourcesFolder(realmUpdatedEvent.getId());
                 //add file listener to the folder (if listener does not exist)
                 try {
-                    registerWatch(Paths.get(getResourcesFolderPathOfRealm(realmCreatedEvent.getRealmName())), realmCreatedEvent.getRealmName());
+                    registerWatch(Paths.get(getResourcesFolderPathOfRealm(realmUpdatedEvent.getId())), realmUpdatedEvent.getId());
                 }
                 catch(IOException ex){
-                    logger.error(String.format("Theme: Could not monitor folder %s for file changes. Expect serious problem with the terms of use in the UI", getResourcesFolderPathOfRealm(realmCreatedEvent.getRealmName())));
+                    logger.error(String.format("Theme: Could not monitor folder %s for file changes. Expect serious problem with the terms of use in the UI", getResourcesFolderPathOfRealm(realmUpdatedEvent.getId())));
                 }
             });
             cluster.registerListener(DELETE_RESOURCE, (ClusterEvent event) -> {
-                RealmDeletedEvent realmDeletedEvent = (RealmDeletedEvent) event;
+                RealmRemovedEvent realmRemovedEvent = (RealmRemovedEvent) event;
                 //remove the file listener
-                deregisterWatch(realmDeletedEvent.getRealmName());
+                deregisterWatch(realmRemovedEvent.getId());
                 //clear the cache of this realm
-                realmsResources.keySet().stream().filter(cacheKey -> realmDeletedEvent.getRealmName().equals(cacheKey.getRealmName())).collect(Collectors.toList())
+                realmsResources.keySet().stream().filter(cacheKey -> realmRemovedEvent.getId().equals(cacheKey.getRealmName())).collect(Collectors.toList())
                         .stream().forEach(cacheKey -> realmsResources.evict(cacheKey));
                 //remove the whole dir contents
-                Commons.deleteFolderAndContents(new File(getResourcesFolderPathOfRealm(realmDeletedEvent.getRealmName())));
+                Commons.deleteFolderAndContents(new File(getResourcesFolderPathOfRealm(realmRemovedEvent.getId())));
             });
 
             REALMS_LISTENER_ADDED = true;

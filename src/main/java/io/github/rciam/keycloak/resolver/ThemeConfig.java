@@ -3,9 +3,10 @@ package io.github.rciam.keycloak.resolver;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.keycloak.models.cache.infinispan.events.RealmUpdatedEvent;
+import org.keycloak.models.cache.infinispan.events.RealmRemovedEvent;
+
 import io.github.rciam.keycloak.resolver.stubs.Configuration;
-import io.github.rciam.keycloak.resolver.stubs.cluster.RealmCreatedEvent;
-import io.github.rciam.keycloak.resolver.stubs.cluster.RealmDeletedEvent;
 import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
@@ -110,27 +111,29 @@ public class ThemeConfig {
             //register local listener
             session.getKeycloakSessionFactory().register(event -> {
                 if(event instanceof RealmModel.RealmCreationEvent) {
+                    String realmId = ((RealmModel.RealmCreationEvent)event).getCreatedRealm().getId();
                     String realmName = ((RealmModel.RealmCreationEvent)event).getCreatedRealm().getName();
                     localSynchronizeConfig(realmName);
-                    cluster.notify(CREATE_THEME_CONFIG, RealmCreatedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast event to all other cluster nodes
+                    cluster.notify(CREATE_THEME_CONFIG, RealmUpdatedEvent.create(realmId, realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast event to all other cluster nodes
                 }
                 else if(event instanceof RealmModel.RealmRemovedEvent) {
+                    String realmId = ((RealmModel.RealmRemovedEvent)event).getRealm().getId();
                     String realmName = ((RealmModel.RealmRemovedEvent)event).getRealm().getName();
                     String filePath = getThemeConfigFilePath(realmName);
                     File configFile = new File(filePath);
                     if(configFile.exists())
                         configFile.delete();
-                    cluster.notify(DELETE_THEME_CONFIG, RealmDeletedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast event to all other cluster nodes
+                    cluster.notify(DELETE_THEME_CONFIG, RealmRemovedEvent.create(realmId, realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast event to all other cluster nodes
                 }
             });
             //register cluster listeners
             cluster.registerListener(CREATE_THEME_CONFIG, (ClusterEvent event) -> {
-                RealmCreatedEvent realmCreatedEvent = (RealmCreatedEvent) event;
-                localSynchronizeConfig(realmCreatedEvent.getRealmName());
+                RealmUpdatedEvent realmUpdatedEvent = (RealmUpdatedEvent) event;
+                localSynchronizeConfig(realmUpdatedEvent.getId());
             });
             cluster.registerListener(DELETE_THEME_CONFIG, (ClusterEvent event) -> {
-                RealmDeletedEvent realmDeletedEvent = (RealmDeletedEvent) event;
-                localSynchronizeConfig(realmDeletedEvent.getRealmName());
+                RealmRemovedEvent realmRemovedEvent = (RealmRemovedEvent) event;
+                localSynchronizeConfig(realmRemovedEvent.getId());
             });
 
             REALMS_LISTENER_ADDED = true;

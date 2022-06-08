@@ -1,13 +1,12 @@
 package io.github.rciam.keycloak.resolver;
 
-import io.github.rciam.keycloak.resolver.stubs.Configuration;
-import io.github.rciam.keycloak.resolver.stubs.cluster.RealmCreatedEvent;
-import io.github.rciam.keycloak.resolver.stubs.cluster.RealmDeletedEvent;
 import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.cache.infinispan.events.RealmRemovedEvent;
+import org.keycloak.models.cache.infinispan.events.RealmUpdatedEvent;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -89,27 +88,29 @@ public class TermsOfUse {
             //register local listener
             session.getKeycloakSessionFactory().register(event -> {
                 if(event instanceof RealmModel.RealmCreationEvent) {
+                    String realmId = ((RealmModel.RealmCreationEvent)event).getCreatedRealm().getId();
                     String realmName = ((RealmModel.RealmCreationEvent)event).getCreatedRealm().getName();
                     localSynchronizeRealmTermsOfUse(realmName);
-                    cluster.notify(CREATE_TERMS_OF_USE, RealmCreatedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast creation event to all other cluster nodes
+                    cluster.notify(CREATE_TERMS_OF_USE, RealmUpdatedEvent.create(realmId, realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast creation event to all other cluster nodes
                 }
                 else if(event instanceof RealmModel.RealmRemovedEvent) {
+                    String realmId = ((RealmModel.RealmRemovedEvent)event).getRealm().getId();
                     String realmName = ((RealmModel.RealmRemovedEvent)event).getRealm().getName();
                     String filePath = getTermsOfUseFile(realmName);
                     File htmlFile = new File(filePath);
                     if(htmlFile.exists())
                         htmlFile.delete();
-                    cluster.notify(DELETE_TERMS_OF_USE, RealmDeletedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast deletion event to all other cluster nodes
+                    cluster.notify(DELETE_TERMS_OF_USE, RealmRemovedEvent.create(realmId, realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast deletion event to all other cluster nodes
                 }
             });
             //register cluster listeners
             cluster.registerListener(CREATE_TERMS_OF_USE, (ClusterEvent event) -> {
-                RealmCreatedEvent realmCreatedEvent = (RealmCreatedEvent) event;
-                localSynchronizeRealmTermsOfUse(realmCreatedEvent.getRealmName());
+                RealmUpdatedEvent realmUpdatedEvent = (RealmUpdatedEvent) event;
+                localSynchronizeRealmTermsOfUse(realmUpdatedEvent.getId());
             });
             cluster.registerListener(DELETE_TERMS_OF_USE, (ClusterEvent event) -> {
-                RealmDeletedEvent realmDeletedEvent = (RealmDeletedEvent) event;
-                localSynchronizeRealmTermsOfUse(realmDeletedEvent.getRealmName());
+                RealmRemovedEvent realmRemovedEvent = (RealmRemovedEvent) event;
+                localSynchronizeRealmTermsOfUse(realmRemovedEvent.getId());
             });
 
             REALMS_LISTENER_ADDED = true;
