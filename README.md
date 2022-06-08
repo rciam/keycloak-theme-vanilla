@@ -138,7 +138,10 @@ This theme is compatible with the custom releases of keycloak which can be found
 | v3.0.0        | v16.1.0-rc1.0.1 + |
 | v3.0.1        | v16.1.0-rc1.0.1 + |
 | v4.0.0        | v16.1.0-rc1.0.1 + |
-| v4.1.0        | v16.1.0-rc1.0.1 + |
+| v4.0.3        | v16.1.0-rc1.0.1 + |
+| v4.1.0        | v18.0.0-rc1.0.1 + |
+
+If you are using keycloak 16.1.0-X.X.X versions, you **should definitely** use the theme version 4.0.3 which includes a critical fix. 
 
 ## License
 
