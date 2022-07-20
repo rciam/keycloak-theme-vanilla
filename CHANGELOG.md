@@ -8,6 +8,10 @@ For Keycloak upstream changelog please see https://www.keycloak.org/docs/latest/
   Full Keycloak upstream jira issue can be shown if filtered by Fix version. For example [Keycloak jira issue for 15.0.2 version](https://issues.redhat.com/browse/KEYCLOAK-19161?jql=project%20%3D%20keycloak%20and%20fixVersion%20%3D%2015.0.2)
 
 
+## [v4.1.1] - 2022-07-20
+### Changed
+- Enhanced the login page IdP listing (css changes)
+
 ## [v4.1.0] - 2022-06-02
 ### Changed
 - Searches also for QUARKUS_HOME as an alternative for app's base path
