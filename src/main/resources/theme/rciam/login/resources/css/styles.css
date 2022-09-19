@@ -71,6 +71,11 @@ input[type=text] {
 
 .card-pf {
     border-radius: 10px;
+    max-width: 800px !important
+}
+
+#kc-header-wrapper{
+    padding:unset;
 }
 
 #kc-providers-list {
@@ -101,3 +106,4 @@ input[type=text] {
     --pf-c-button--BorderWidth: 0px !important;
     --pf-c-button--BorderColor: transparent !important;
 }
+
