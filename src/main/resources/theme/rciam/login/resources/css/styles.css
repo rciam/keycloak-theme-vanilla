@@ -107,3 +107,6 @@ input[type=text] {
     --pf-c-button--BorderColor: transparent !important;
 }
 
+.li-disc{
+  list-style-type: disc;
+}

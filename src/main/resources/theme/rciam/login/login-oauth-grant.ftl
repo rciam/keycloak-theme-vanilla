@@ -17,7 +17,7 @@
             <ul>
                 <#if oauth.clientScopesRequested??>
                     <#list oauth.clientScopesRequested as clientScope>
-                        <li>
+                        <li class="li-disc">
                             <span>${advancedMsg(clientScope.consentScreenText)}</span>
                         </li>
                     </#list>
