@@ -13,16 +13,18 @@
         </p>
     <#elseif section = "form">
         <div id="kc-oauth" class="content-area">
-            <h3>${msg("oauthGrantRequest")}</h3>
-            <ul>
-                <#if oauth.clientScopesRequested??>
+            <#if oauth.clientScopesRequested??>
+                <h3>${msg("oauthGrantRequest")}</h3>
+                <ul class="ul-margins-paddings">
                     <#list oauth.clientScopesRequested as clientScope>
                         <li class="li-disc">
-                            <span>${advancedMsg(clientScope.consentScreenText)}</span>
+                            <b>
+                                <span>${advancedMsg(clientScope.consentScreenText)}</span>
+                            </b>
                         </li>
                     </#list>
-                </#if>
-            </ul>
+                </ul>
+            </#if>
             <#if client.attributes.country?has_content>
                 <h3>
                     ${msg("consentCountry",oauth.countryName)}

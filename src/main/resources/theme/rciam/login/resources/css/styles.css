@@ -109,5 +109,11 @@ input[type=text] {
 
 .li-disc{
   list-style-type: disc;
-  padding: 0 0;
+  padding: 3px 0 !important;
+  font-size: larger !important;
+}
+
+.ul-margins-paddings {
+    margin-bottom: 10px !important;
+    padding-left: 30px !important;
 }
