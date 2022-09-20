@@ -109,4 +109,5 @@ input[type=text] {
 
 .li-disc{
   list-style-type: disc;
+  padding: 0 0;
 }
