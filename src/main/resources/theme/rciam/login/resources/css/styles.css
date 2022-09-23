@@ -117,3 +117,7 @@ input[type=text] {
     margin-bottom: 10px !important;
     padding-left: 30px !important;
 }
+
+#kc-page-title > img {
+    max-height: 90px;
+}
