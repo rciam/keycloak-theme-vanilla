@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 For Keycloak upstream changelog please see https://www.keycloak.org/docs/latest/release_notes/index.html.
   Full Keycloak upstream jira issue can be shown if filtered by Fix version. For example [Keycloak jira issue for 15.0.2 version](https://issues.redhat.com/browse/KEYCLOAK-19161?jql=project%20%3D%20keycloak%20and%20fixVersion%20%3D%2015.0.2)
 
+## [v4.1.2] - 2022-09-27
+### Changed
+- Increased the AUP width, the WAYF listing width and removed the logo extra padding (RCIAM-1124).
+- Bullets in claims (release) listing on client consent screen (RCIAM-1124).
+- Various changes on elements padding in OIDC client consent screen (RCIAM-1124).
+- Client terms UI enhancements, claims list bold, left padding ul, changed oauthGrantRequest text message (RCIAM-1124).
 
 ## [v4.1.1] - 2022-07-20
 ### Changed

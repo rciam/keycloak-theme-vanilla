@@ -127,7 +127,7 @@ and the keycloak theme will pick up any file instantly (it utilizes file listern
 This theme is compatible with the custom releases of keycloak which can be found [here](https://github.com/eosc-kc/keycloak/releases) 
 
 | Theme version | Keycloak version |
-|---------------|-------------------|
+|---------------|-----------------|
 | v1.0.0        | v15.0.2-r1.0.(1-4) |
 | v1.1.0        | v15.0.2-r1.0.(1-4) |
 | v1.2.0        | v15.0.2-r1.0.5 + |
@@ -137,10 +137,11 @@ This theme is compatible with the custom releases of keycloak which can be found
 | v2.3.0        | v16.1.0-rc1.0.1 + |
 | v3.0.0        | v16.1.0-rc1.0.1 + |
 | v3.0.1        | v16.1.0-rc1.0.1 + |
-| v4.0.0        | v16.1.0-rc1.0.1 + |
-| v4.0.3        | v16.1.0-rc1.0.1 + |
-| v4.1.0        | v18.0.0-rc1.0.1 + |
-| v4.1.1        | v18.0.0-rc1.0.1 + |
+| v4.0.0        | v16.1.0-1.0.1 + |
+| v4.0.3        | v16.1.0-1.0.1 + |
+| v4.1.0        | v18.0.0-1.0.1 + |
+| v4.1.1        | v18.0.0-1.0.1 + |
+| v4.1.2        | v18.0.1-2.1 +   |
 
 If you are using keycloak 16.1.0-X.X.X versions, you **should definitely** use the theme version 4.0.3 which includes a critical fix. 
 
