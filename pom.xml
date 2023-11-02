@@ -6,14 +6,14 @@
 
     <groupId>org.rciam.keycloak</groupId>
     <artifactId>keycloak-theme-vanilla</artifactId>
-    <version>4.1.2</version>
+    <version>5.0.0</version>
     <packaging>jar</packaging>
 
     <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-        <keycloak.version>18.0.0</keycloak.version>
-        <infinispan.version>12.1.7.Final</infinispan.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <keycloak.version>22.0.5</keycloak.version>
+        <infinispan.version>14.0.17.Final</infinispan.version>
     </properties>
 
     <organization>
@@ -49,12 +49,12 @@
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-core</artifactId>
+            <artifactId>infinispan-core-jakarta</artifactId>
             <version>${infinispan.version}</version>
         </dependency>
         <dependency>
             <groupId>org.infinispan</groupId>
-            <artifactId>infinispan-commons</artifactId>
+            <artifactId>infinispan-commons-jakarta</artifactId>
             <version>${infinispan.version}</version>
             <scope>provided</scope>
         </dependency>

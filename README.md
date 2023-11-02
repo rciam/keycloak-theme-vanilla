@@ -6,7 +6,8 @@ This is the vanilla theme for rciam installations.
 Please note that this theme needs a custom modification on core keycloak code in order to work. 
 The [theme releases](https://github.com/rciam/keycloak-theme-vanilla/releases) are compatible with these [keycloak releases](https://github.com/eosc-kc/keycloak/releases), as presented in the compatibility matrix [at the end of this page](https://github.com/rciam/keycloak-theme-vanilla/edit/master/README.md#compatibility-matrix)
 
-The theme also requires one of the following env variables: { JBOSS_HOME | QUARKUS_HOME | HOME } to store its configuration files.
+**The theme also requires one of the following env variables: { JBOSS_HOME | QUARKUS_HOME | HOME } to store its configuration files - even in development mode.**
+**This is the folder that theme files are stored. Folder can be empty for default configuration.**
 
 
 Contact the development team for instructions.
@@ -126,24 +127,26 @@ and the keycloak theme will pick up any file instantly (it utilizes file listern
 
 This theme is compatible with the custom releases of keycloak which can be found [here](https://github.com/eosc-kc/keycloak/releases) 
 
-| Theme version | Keycloak version |
-|---------------|-----------------|
+| Theme version | Keycloak version   |
+|---------------|--------------------|
 | v1.0.0        | v15.0.2-r1.0.(1-4) |
 | v1.1.0        | v15.0.2-r1.0.(1-4) |
-| v1.2.0        | v15.0.2-r1.0.5 + |
-| v2.0.0        | v15.0.2-r1.0.6 + |
-| v2.1.0        | v15.0.2-r1.0.6 + |
-| v2.2.0        | v15.0.2-r1.0.6 + |
-| v2.3.0        | v16.1.0-rc1.0.1 + |
-| v3.0.0        | v16.1.0-rc1.0.1 + |
-| v3.0.1        | v16.1.0-rc1.0.1 + |
-| v4.0.0        | v16.1.0-1.0.1 + |
-| v4.0.3        | v16.1.0-1.0.1 + |
-| v4.1.0        | v18.0.0-1.0.1 + |
-| v4.1.1        | v18.0.0-1.0.1 + |
-| v4.1.2        | v18.0.1-2.1 +   |
+| v1.2.0        | v15.0.2-r1.0.5 +   |
+| v2.0.0        | v15.0.2-r1.0.6 +   |
+| v2.1.0        | v15.0.2-r1.0.6 +   |
+| v2.2.0        | v15.0.2-r1.0.6 +   |
+| v2.3.0        | v16.1.0-rc1.0.1 +  |
+| v3.0.0        | v16.1.0-rc1.0.1 +  |
+| v3.0.1        | v16.1.0-rc1.0.1 +  |
+| v4.0.0        | v16.1.0-1.0.1 +    |
+| v4.0.3        | v16.1.0-1.0.1 +    |
+| v4.1.0        | v18.0.0-1.0.1 +    |
+| v4.1.1        | v18.0.0-1.0.1 +    |
+| v4.1.2        | v18.0.1-2.1 +      |
+| v5.0.0        | v22.0.5-1.0 +      |
 
 If you are using keycloak 16.1.0-X.X.X versions, you **should definitely** use the theme version 4.0.3 which includes a critical fix. 
+Version 5.0.0 and upper is based in Keycloak version 22.0.5 . This means use JDK 17 and Jakarta version.
 
 ## License
 
