@@ -151,7 +151,7 @@
   <script>
 
     var realm = '${realm.name}';
-    var baseUri = "http://localhost:8080/";
+    var baseUri = '${uriInfo.baseUri}';
     var resourcesCommonPath = '${url.resourcesCommonPath}';
     var resourcesPath = '${url.resourcesPath}';
 
