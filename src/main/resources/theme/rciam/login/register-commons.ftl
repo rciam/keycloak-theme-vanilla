@@ -1,19 +1,11 @@
 <#macro termsAcceptance>
     <#if termsAcceptanceRequired?? && termsAcceptanceRequired>
         <div class="form-group">
-            <div class="${properties.kcInputWrapperClass!}">
-                ${msg("termsTitle")}
-                <div id="kc-registration-terms-text">
-                    <a href="${uriInfo.baseUri}realms/${realm.name}/theme-info/terms-of-use"}" target="_blank" >${kcSanitize(msg("termsText"))?no_esc}</a>
-                </div>
-            </div>
-        </div>
-        <div class="form-group">
             <div class="${properties.kcLabelWrapperClass!}">
                 <input type="checkbox" id="termsAccepted" name="termsAccepted" class="${properties.kcCheckboxInputClass!}"
                        aria-invalid="<#if messagesPerField.existsError('termsAccepted')>true</#if>"
                 />
-                <label for="termsAccepted" class="${properties.kcLabelClass!}">${msg("acceptTerms")}</label>
+                <label for="termsAccepted" class="${properties.kcLabelClass!}">${msg("acceptTermsTxt")} <a href="${uriInfo.baseUri}realms/${realm.name}/theme-info/terms-of-use"}" target="_blank" >${kcSanitize(msg("acceptTerms"))?no_esc}</a></label>
             </div>
             <#if messagesPerField.existsError('termsAccepted')>
                 <div class="${properties.kcLabelWrapperClass!}">
