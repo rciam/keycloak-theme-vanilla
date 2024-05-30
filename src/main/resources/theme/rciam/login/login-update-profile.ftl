@@ -2,9 +2,14 @@
 <#import "register-commons.ftl" as registerCommons>
 <@layout.registrationLayout displayMessage=!messagesPerField.existsError('username','email','firstName','lastName','termsAccepted'); section>
     <#if section = "header">
-        ${msg("loginProfileTitle")}
+        <b>${msg("loginProfileTitle")}</b>
     <#elseif section = "form">
         <form id="kc-update-profile-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
+            <div class="form-group">
+                <div class="${properties.kcInputWrapperClass!}">
+                    ${msg("loginProfileDescription")}
+                </div>
+            </div>
             <#if user.editUsernameAllowed>
                 <div class="${properties.kcFormGroupClass!}" style="display:none;">
                     <div class="${properties.kcLabelWrapperClass!}">

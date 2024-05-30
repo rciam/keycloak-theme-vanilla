@@ -3,10 +3,15 @@
 <#import "register-commons.ftl" as registerCommons>
 <@layout.registrationLayout displayMessage=messagesPerField.exists('global') displayRequiredFields=true; section>
     <#if section = "header">
-        ${msg("loginProfileTitle")}
+       <b>${msg("loginProfileTitle")}</b>
     <#elseif section = "form">
         <form id="kc-update-profile-form" class="${properties.kcFormClass!}" action="${url.loginAction}" method="post">
 
+            <div class="form-group">
+                <div class="${properties.kcInputWrapperClass!}">
+                   ${msg("loginProfileDescription")}
+                </div>
+            </div>
             <@userProfileCommons.userProfileFormFields/>
             <@registerCommons.termsAcceptance/>
 
