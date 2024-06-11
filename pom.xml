@@ -6,7 +6,7 @@
 
     <groupId>org.rciam.keycloak</groupId>
     <artifactId>keycloak-theme-vanilla</artifactId>
-    <version>5.0.3</version>
+    <version>5.1.0</version>
     <packaging>jar</packaging>
 
     <properties>

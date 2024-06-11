@@ -35,6 +35,7 @@
 
             var sessionParams = new URL(baseUriOrigin+idpLoginFullUrl).searchParams;
 
+            $scope.maxIdPsWithoutSearch = 6;
             $scope.fetchParams = { 'keyword': null, 'first' : 0, 'max': 20, 'client_id': sessionParams.get('client_id'), 'tab_id': sessionParams.get('tab_id'), 'session_code': sessionParams.get('session_code')};
             $scope.idps = [];
             $scope.hiddenIdps = 0;
@@ -226,21 +227,23 @@
             <hr/>
             <h4>${msg("identity-provider-login-label")}</h4>
 -->
-            <div ng-if="(idps.length + hiddenIdps >= fetchParams.max && fetchParams.keyword==null) || fetchParams.keyword!=null">
-                <input id="kc-providers-filter" type="text" placeholder="Search..." ng-model="fetchParams.keyword">
-                <!-- <i class="fa fa-search" id="kc-providers-filter-button"> </i> -->
+            <div ng-if="(idps.length >= maxIdPsWithoutSearch && fetchParams.keyword==null) || fetchParams.keyword!=null">
+                <i class="fa fa-search" id="kc-providers-filter-button"> </i>
+                <input id="kc-providers-filter" type="text" placeholder="Search your authentication provider" ng-model="fetchParams.keyword" style="width:80%">
             </div>
-            <ul id="kc-providers-list" class="${properties.kcFormSocialAccountListClass!} login-pf-list-scrollable" on-scroll="scrollCallback($event, $direct)" >
-               <a ng-repeat="idp in idps" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : idps.length > 3 }" type="button" href="{{idp.loginUrl}}">
-                  <div ng-if="idp.iconClasses!=null">
-                     <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
-                     <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                  </div>
-                  <div ng-if="idp.iconClasses==null">
-                     <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                  </div>
-               </a>
-            </ul>
+            <div ng-if="(idps.length < maxIdPsWithoutSearch) || (fetchParams.keyword!=null && fetchParams.keyword!='')">
+               <ul id="kc-providers-list" class="${properties.kcFormSocialAccountListClass!} login-pf-list-scrollable" on-scroll="scrollCallback($event, $direct)" >
+                  <a ng-repeat="idp in idps" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : idps.length > 3 }" type="button" href="{{idp.loginUrl}}">
+                     <div ng-if="idp.iconClasses!=null">
+                        <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
+                        <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
+                     </div>
+                     <div ng-if="idp.iconClasses==null">
+                        <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
+                     </div>
+                  </a>
+               </ul>
+            </div>
         </div>
       </div>
 
