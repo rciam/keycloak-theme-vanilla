@@ -116,6 +116,24 @@
 
 
     </script>
+    <style>
+        .input-container {
+               position: relative;
+               width: 95%;
+        }
+        .input-container .fa-search {
+               position: absolute;
+               left: 5px;
+               top: 50%;
+               transform: translateY(-50%);
+               color: #aaa;
+        }
+        .input-container input {
+                width: 100%;
+                padding-left: 30px; /* Adjust based on icon size */
+                box-sizing: border-box;
+        }
+    </style>
 
 <@layout.registrationLayout displayMessage=!messagesPerField.existsError('username') displayInfo=(realm.password && realm.registrationAllowed && !registrationDisabled??); section>
     <#if section = "header">
@@ -199,9 +217,9 @@
                 <hr/>
                 <h4>${msg("identity-provider-login-label")}</h4>
 
-                <div ng-if="(idps.length >= maxIdPsWithoutSearch && fetchParams.keyword==null) || fetchParams.keyword!=null">
+                <div ng-if="(idps.length >= maxIdPsWithoutSearch && fetchParams.keyword==null) || fetchParams.keyword!=null" class="input-container">
                     <i class="fa fa-search" id="kc-providers-filter-button"> </i>
-                    <input id="kc-providers-filter" type="text" placeholder="Search your authentication provider" ng-model="fetchParams.keyword" ng-keypress="applySearch($event)" style="width:80%">
+                    <input id="kc-providers-filter" type="text" placeholder="Search your authentication provider" ng-model="fetchParams.keyword" ng-keypress="applySearch($event)">
                 </div>
                 <div ng-if="(idps.length < maxIdPsWithoutSearch) || (fetchParams.keyword!=null && fetchParams.keyword!='')">
                    <ul id="kc-providers-list" class="${properties.kcFormSocialAccountListClass!} login-pf-list-scrollable" on-scroll="scrollCallback($event, $direct)" >
