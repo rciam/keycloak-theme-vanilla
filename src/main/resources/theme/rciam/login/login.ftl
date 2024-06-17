@@ -98,6 +98,7 @@
             getPromotedIdps();
 
 
+
             $scope.scrollCallback = function ($event, $direct) {
                 if($scope.reachedEndPage==true || $event.target.lastElementChild==null)
                     return;
@@ -148,6 +149,24 @@
                 width: 100%;
                 padding-left: 30px; /* Adjust based on icon size */
                 box-sizing: border-box;
+            }
+
+            .hr-sect {
+                display: flex;
+                flex-basis: 100%;
+                align-items: center;
+                color: rgba(0, 0, 0, 0.35);
+                margin: 8px 0px;
+            }
+            .hr-sect:before,
+            .hr-sect:after {
+                content: "";
+                flex-grow: 1;
+                background: rgba(0, 0, 0, 0.35);
+                height: 1px;
+                font-size: 0px;
+                line-height: 0px;
+                margin: 0px 8px;
             }
       </style>
 
@@ -224,21 +243,6 @@
             <img id='spinner' src='${url.resourcesPath}/img/spinner.svg' ng-class="{'hidden' : !isSearching }" style="position: relative; transform: translate(-50%, -50%); width:100px; height:100px;" />
         </div>
 
-        <div ng-if="promotedIdps!=null && promotedIdps.length>0" id="kc-social-providers" class="${properties.kcFormSocialAccountSectionClass!}">
-            <hr/>
-            <h4>${msg("general-identity-providers")}</h4>
-            <ul class="${properties.kcFormSocialAccountListClass!} ">
-                <a ng-repeat="idp in promotedIdps" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : promotedIdps.length > 3 }" type="button" href="{{idp.loginUrl}}">
-                    <div ng-if="idp.iconClasses!=null">
-                        <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
-                        <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                    </div>
-                    <div ng-if="idp.iconClasses==null">
-                        <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                    </div>
-                </a>
-            </ul>
-        </div>
         <div ng-if="(idps!=null && idps.length>0) || fetchParams.keyword!=null" id="kc-social-providers" class="${properties.kcFormSocialAccountSectionClass!}">
 <#--
             <hr/>
@@ -260,6 +264,23 @@
                      </div>
                   </a>
                </ul>
+            </div>
+
+            <div ng-if="promotedIdps!=null && promotedIdps.length>0 && (idps.length >= maxIdPsWithoutSearch || fetchParams.keyword!=null)" id="kc-social-providers" class="${properties.kcFormSocialAccountSectionClass!}">
+                <div class="hr-sect">
+                    <h4>${msg("general-identity-providers")}</h4>
+                </div>
+                <ul class="${properties.kcFormSocialAccountListClass!} ">
+                    <a ng-repeat="idp in promotedIdps" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : promotedIdps.length > 3 }" type="button" href="{{idp.loginUrl}}">
+                        <div ng-if="idp.iconClasses!=null">
+                            <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
+                            <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
+                        </div>
+                        <div ng-if="idp.iconClasses==null">
+                             <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
+                        </div>
+                    </a>
+                </ul>
             </div>
         </div>
       </div>
