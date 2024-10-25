@@ -23,6 +23,7 @@ import io.github.rciam.keycloak.resolver.ThemeConfig;
 import io.github.rciam.keycloak.resolver.stubs.Configuration;
 import io.github.rciam.keycloak.resolver.stubs.cache.CacheKey;
 import io.github.rciam.keycloak.resolver.stubs.rest.IdpPageResult;
+import jakarta.ws.rs.core.Cookie;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
@@ -35,6 +36,7 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
@@ -62,12 +64,15 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
+import org.keycloak.theme.Theme;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -79,6 +84,7 @@ import java.util.stream.Stream;
 public class ThemeResourceProvider implements RealmResourceProvider {
 
     private static final Logger logger = Logger.getLogger(ThemeResourceProvider.class);
+    private static final String KEYCLOAK_REMEMBER_IDPS = "KEYCLOAK_REMEMBER_IDPS";
 
     @Context
     protected ClientConnection clientConnection;
@@ -262,7 +268,7 @@ public class ThemeResourceProvider implements RealmResourceProvider {
     @GET
     @Path("/identity-providers-promoted")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<IdentityProviderBean.IdentityProvider> getPromotedIdentityProviders() {
+    public PromotedBean getPromotedIdentityProviders() {
         RealmModel realm = session.getContext().getRealm();
         List<IdentityProviderModel> promotedProviders = new ArrayList<>();
         realm.getIdentityProvidersStream().forEach(idp -> {
@@ -272,7 +278,16 @@ public class ThemeResourceProvider implements RealmResourceProvider {
 
         //Expose through the Bean, because it makes some extra processing. URI is re-composed back in the UI, so we can ignore here
         IdentityProviderBean idpBean = new IdentityProviderBean(realm, session, promotedProviders, URI.create(""));
-        return idpBean.getProviders()!=null ? idpBean.getProviders() : new ArrayList<>();
+        List<IdentityProviderBean.IdentityProvider> lastLoginIdPs = new ArrayList<>();
+        Cookie idpsCookie = session.getContext().getHttpRequest().getHttpHeaders().getCookies().get(KEYCLOAK_REMEMBER_IDPS);
+        if (idpsCookie != null) {
+            //last login IdP to cookie (alias comma separated)
+            List<String> lastLoginIdPAlias = Arrays.asList(idpsCookie.getValue().split(","));
+            IdentityProviderBean lastLoginIdPBean = new IdentityProviderBean(realm, session, lastLoginIdPAlias.stream().map(idPAlias -> realm.getIdentityProviderByAlias(idPAlias)).filter(Objects::nonNull).collect(Collectors.toList()), URI.create(""));
+            lastLoginIdPs.addAll(lastLoginIdPBean.getProviders());
+        }
+        PromotedBean bean = new PromotedBean(idpBean.getProviders()!=null ? idpBean.getProviders() : new ArrayList<>(), lastLoginIdPs);
+        return bean;
 
     }
 
@@ -348,6 +363,32 @@ public class ThemeResourceProvider implements RealmResourceProvider {
         AdminAuth adminAuth = new AdminAuth(realm, authResult.getToken(), authResult.getUser(), client);
         session.getContext().setRealm(originalRealm);
         return adminAuth;
+    }
+
+    private class PromotedBean {
+        public PromotedBean(){}
+        public PromotedBean(List<IdentityProviderBean.IdentityProvider> promotedIdPs, List<IdentityProviderBean.IdentityProvider> lastLoginIdPs ){
+            this.promotedIdPs = promotedIdPs;
+            this.lastLoginIdPs = lastLoginIdPs;
+        }
+        private List<IdentityProviderBean.IdentityProvider> promotedIdPs;
+        private List<IdentityProviderBean.IdentityProvider> lastLoginIdPs;
+
+        public List<IdentityProviderBean.IdentityProvider> getPromotedIdPs() {
+            return promotedIdPs;
+        }
+
+        public void setPromotedIdPs(List<IdentityProviderBean.IdentityProvider> promotedIdPs) {
+            this.promotedIdPs = promotedIdPs;
+        }
+
+        public List<IdentityProviderBean.IdentityProvider> getLastLoginIdPs() {
+            return lastLoginIdPs;
+        }
+
+        public void setLastLoginIdPs(List<IdentityProviderBean.IdentityProvider> lastLoginIdPs) {
+            this.lastLoginIdPs = lastLoginIdPs;
+        }
     }
 
 

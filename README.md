@@ -127,23 +127,24 @@ and the keycloak theme will pick up any file instantly (it utilizes file listern
 
 This theme is compatible with the custom releases of keycloak which can be found [here](https://github.com/eosc-kc/keycloak/releases) 
 
-| Theme version | Keycloak version   |
-|---------------|--------------------|
-| v1.0.0        | v15.0.2-r1.0.(1-4) |
-| v1.1.0        | v15.0.2-r1.0.(1-4) |
-| v1.2.0        | v15.0.2-r1.0.5 +   |
-| v2.0.0        | v15.0.2-r1.0.6 +   |
-| v2.1.0        | v15.0.2-r1.0.6 +   |
-| v2.2.0        | v15.0.2-r1.0.6 +   |
-| v2.3.0        | v16.1.0-rc1.0.1 +  |
-| v3.0.0        | v16.1.0-rc1.0.1 +  |
-| v3.0.1        | v16.1.0-rc1.0.1 +  |
-| v4.0.0        | v16.1.0-1.0.1 +    |
-| v4.0.3        | v16.1.0-1.0.1 +    |
-| v4.1.0        | v18.0.0-1.0.1 +    |
-| v4.1.1        | v18.0.0-1.0.1 +    |
-| v4.1.2        | v18.0.1-2.1 +      |
-| v5.0.0        | v22.0.5-1.0 +      |
+| Theme version | Keycloak version  |
+|---------------|-------------------|
+| v1.0.0        | 15.0.2-r1.0.(1-4) |
+| v1.1.0        | 15.0.2-r1.0.(1-4) |
+| v1.2.0        | 15.0.2-r1.0.5 +   |
+| v2.0.0        | 15.0.2-r1.0.6 +   |
+| v2.1.0        | 15.0.2-r1.0.6 +   |
+| v2.2.0        | 15.0.2-r1.0.6 +   |
+| v2.3.0        | 16.1.0-rc1.0.1 +  |
+| v3.0.0        | 16.1.0-rc1.0.1 +  |
+| v3.0.1        | 16.1.0-rc1.0.1 +  |
+| v4.0.0        | 16.1.0-1.0.1 +    |
+| v4.0.3        | 16.1.0-1.0.1 +    |
+| v4.1.0        | 18.0.0-1.0.1 +    |
+| v4.1.1        | 18.0.0-1.0.1 +    |
+| v4.1.2        | 18.0.1-2.1 +      |
+| v5.0.0        | 22.0.5-1.0 +      |
+| v5.3.0        | 22.0.5-1.11 +     |
 
 If you are using keycloak 16.1.0-X.X.X versions, you **should definitely** use the theme version 4.0.3 which includes a critical fix. 
 Version 5.0.0 and upper is based in Keycloak version 22.0.5 . This means use JDK 17 and Jakarta version.

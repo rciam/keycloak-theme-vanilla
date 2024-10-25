@@ -66,10 +66,15 @@
                 $http({method: 'GET', url: baseUri + '/realms/' + realm + '/theme-info/identity-providers-promoted' })
                     .then(
                         function(success) {
-                            success.data.forEach(function(idp) {
-                                setLoginUrl(idp);
-                            });
-                            $scope.promotedIdps = success.data;
+                           var response = success.data;
+                           $scope.promotedIdps = response.promotedIdPs;
+                           $scope.promotedIdps.forEach(function(idp) {
+                             setLoginUrl(idp);
+                           });
+                           $scope.lastLoginIdPs = response.lastLoginIdPs;
+                           $scope.lastLoginIdPs.forEach(function(idp) {
+                             setLoginUrl(idp);
+                           });
                         },
                         function(error){
                         }
@@ -213,6 +218,30 @@
                 </#if>
         </div>
 
+        <div ng-if="lastLoginIdPs!=null && lastLoginIdPs.length>0 && (idps.length >= maxIdPsWithoutSearch || fetchParams.keyword!=null)" id="kc-social-providers" class="${properties.kcFormSocialAccountSectionClass!}">
+          <div class="hr-sect">
+            <h4>${msg("chosen-authentication-providers")}</h4>
+          </div>
+          <ul class="${properties.kcFormSocialAccountListClass!} ">
+            <a ng-repeat="idp in lastLoginIdPs" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : promotedIdps.length > 3 }" type="button" href="{{idp.loginUrl}}">
+              <div ng-if="idp.logoUri!=null">
+                <i class="${properties.kcCommonLogoIdP!} fa fa-extend" style="background-size: 100%;background-image: url({{idp.logoUri}});" aria-hidden="true"></i>
+                <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
+                      </div>
+                      <div ng-if="idp.iconClasses && idp.logoUri==null">
+                        <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
+                        <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
+                      </div>
+                      <div ng-if="!idp.iconClasses && idp.logoUri==null">
+                        <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
+                      </div>
+                    </a>
+                  /ul>
+                  <div class="hr-sect">
+                    <h4>${msg("general-identity-providers")}</h4>
+                  </div>
+                </div>
+
         <div ng-app="angularLoginPart" ng-controller="idpListing">
 
             <div ng-if="(idps!=null && idps.length>0) || fetchParams.keyword!=null" id="kc-social-providers" class="${properties.kcFormSocialAccountSectionClass!}">
@@ -226,13 +255,17 @@
                 <div ng-if="(idps.length < maxIdPsWithoutSearch) || (fetchParams.keyword!=null && fetchParams.keyword!='')">
                    <ul id="kc-providers-list" class="${properties.kcFormSocialAccountListClass!} login-pf-list-scrollable" on-scroll="scrollCallback($event, $direct)" >
                       <a ng-repeat="idp in idps" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : idps.length > 3 }" type="button" href="{{idp.loginUrl}}">
-                         <div ng-if="idp.iconClasses!=null">
+                          <div ng-if="idp.logoUri!=null">
+                            <i class="${properties.kcCommonLogoIdP!} fa fa-extend" style="background-image: url({{idp.logoUri}});" aria-hidden="true"></i>
+                            <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
+                          </div>
+                          <div ng-if="idp.iconClasses && idp.logoUri==null">
                             <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
                             <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                         </div>
-                         <div ng-if="idp.iconClasses==null">
+                          </div>
+                          <div ng-if="!idp.iconClasses && idp.logoUri==null">
                             <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                         </div>
+                          </div>
                       </a>
                    </ul>
                 </div>
@@ -243,13 +276,17 @@
                     </div>
                     <ul class="${properties.kcFormSocialAccountListClass!} ">
                         <a ng-repeat="idp in promotedIdps" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : promotedIdps.length > 3 }" type="button" href="{{idp.loginUrl}}">
-                            <div ng-if="idp.iconClasses!=null">
-                                <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
-                                <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                            </div>
-                            <div ng-if="idp.iconClasses==null">
-                                <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                            </div>
+                           <div ng-if="idp.logoUri!=null">
+                             <i class="${properties.kcCommonLogoIdP!} fa fa-extend" style="background-image: url({{idp.logoUri}});" aria-hidden="true"></i>
+                             <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
+                           </div>
+                           <div ng-if="idp.iconClasses && idp.logoUri==null">
+                             <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
+                             <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
+                           </div>
+                           <div ng-if="!idp.iconClasses && idp.logoUri==null">
+                             <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
+                           </div>
                         </a>
                     </ul>
                 </div>
