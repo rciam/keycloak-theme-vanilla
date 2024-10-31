@@ -266,7 +266,7 @@
                 <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
               </div>
             </a>
-          /ul>
+          </ul>
           <div class="hr-sect">
             <h4>${msg("general-identity-providers")}</h4>
           </div>

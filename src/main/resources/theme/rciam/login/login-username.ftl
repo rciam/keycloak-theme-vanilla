@@ -227,20 +227,20 @@
               <div ng-if="idp.logoUri!=null">
                 <i class="${properties.kcCommonLogoIdP!} fa fa-extend" style="background-size: 100%;background-image: url({{idp.logoUri}});" aria-hidden="true"></i>
                 <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                      </div>
-                      <div ng-if="idp.iconClasses && idp.logoUri==null">
-                        <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
-                        <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                      </div>
-                      <div ng-if="!idp.iconClasses && idp.logoUri==null">
-                        <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                      </div>
-                    </a>
-                  /ul>
-                  <div class="hr-sect">
-                    <h4>${msg("general-identity-providers")}</h4>
-                  </div>
-                </div>
+              </div>
+              <div ng-if="idp.iconClasses && idp.logoUri==null">
+                 <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
+                 <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
+              </div>
+              <div ng-if="!idp.iconClasses && idp.logoUri==null">
+                 <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
+              </div>
+            </a>
+          </ul>
+          <div class="hr-sect">
+             <h4>${msg("general-identity-providers")}</h4>
+          </div>
+        </div>
 
         <div ng-app="angularLoginPart" ng-controller="idpListing">
 
