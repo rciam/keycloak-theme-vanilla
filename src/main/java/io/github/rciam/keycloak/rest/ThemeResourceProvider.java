@@ -23,7 +23,6 @@ import io.github.rciam.keycloak.resolver.ThemeConfig;
 import io.github.rciam.keycloak.resolver.stubs.Configuration;
 import io.github.rciam.keycloak.resolver.stubs.cache.CacheKey;
 import io.github.rciam.keycloak.resolver.stubs.rest.IdpPageResult;
-import jakarta.ws.rs.core.Cookie;
 import org.jboss.logging.Logger;
 import org.jboss.resteasy.plugins.providers.multipart.InputPart;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
@@ -36,7 +35,6 @@ import org.keycloak.models.ClientModel;
 import org.keycloak.models.IdentityProviderModel;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
-import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
@@ -46,6 +44,7 @@ import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.services.resources.admin.AdminAuth;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.AdminPermissions;
+import org.keycloak.services.util.CookieHelper;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
 import jakarta.ws.rs.BadRequestException;
@@ -64,19 +63,23 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
-import org.keycloak.theme.Theme;
+import org.keycloak.util.JsonSerialization;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -84,7 +87,7 @@ import java.util.stream.Stream;
 public class ThemeResourceProvider implements RealmResourceProvider {
 
     private static final Logger logger = Logger.getLogger(ThemeResourceProvider.class);
-    private static final String KEYCLOAK_REMEMBER_IDPS = "KEYCLOAK_REMEMBER_IDPS";
+    private static final String KEYCLOAK_REMEMBER_IDPS = "KEYCLOAK_REMEMBER_IDPS_";
 
     @Context
     protected ClientConnection clientConnection;
@@ -193,7 +196,6 @@ public class ThemeResourceProvider implements RealmResourceProvider {
         for (InputPart inputPart : fileEntry.getValue()) {
 
             try {
-                MultivaluedMap<String, String> header = inputPart.getHeaders();
                 InputStream inputStream = inputPart.getBody(InputStream.class, null);
 
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -276,18 +278,23 @@ public class ThemeResourceProvider implements RealmResourceProvider {
                 promotedProviders.add(idp);
         });
 
+        List<IdentityProviderBean.IdentityProvider> lastLoginIdPs = new ArrayList<>();
+        Set<String> cookieValues = CookieHelper.getCookieValue(session, KEYCLOAK_REMEMBER_IDPS+ realm.getId());
+        if (!cookieValues.isEmpty()) {
+            try {
+                List<String> lastLoginIdPAlias = JsonSerialization.readValue(URLDecoder.decode(cookieValues.iterator().next(), StandardCharsets.UTF_8), List.class);
+                IdentityProviderBean lastLoginIdPBean = new IdentityProviderBean(realm, session, lastLoginIdPAlias.stream().map(realm::getIdentityProviderByAlias).filter(Objects::nonNull).collect(Collectors.toList()), URI.create(""));
+                lastLoginIdPs.addAll(lastLoginIdPBean.getProviders());
+                //remove last login IdPs from promoted
+                promotedProviders.removeIf(idp -> lastLoginIdPAlias.contains(idp.getAlias()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
         //Expose through the Bean, because it makes some extra processing. URI is re-composed back in the UI, so we can ignore here
         IdentityProviderBean idpBean = new IdentityProviderBean(realm, session, promotedProviders, URI.create(""));
-        List<IdentityProviderBean.IdentityProvider> lastLoginIdPs = new ArrayList<>();
-        Cookie idpsCookie = session.getContext().getHttpRequest().getHttpHeaders().getCookies().get(KEYCLOAK_REMEMBER_IDPS);
-        if (idpsCookie != null) {
-            //last login IdP to cookie (alias comma separated)
-            List<String> lastLoginIdPAlias = Arrays.asList(idpsCookie.getValue().split(","));
-            IdentityProviderBean lastLoginIdPBean = new IdentityProviderBean(realm, session, lastLoginIdPAlias.stream().map(idPAlias -> realm.getIdentityProviderByAlias(idPAlias)).filter(Objects::nonNull).collect(Collectors.toList()), URI.create(""));
-            lastLoginIdPs.addAll(lastLoginIdPBean.getProviders());
-        }
-        PromotedBean bean = new PromotedBean(idpBean.getProviders()!=null ? idpBean.getProviders() : new ArrayList<>(), lastLoginIdPs);
-        return bean;
+        return new PromotedBean(idpBean.getProviders()!=null ? idpBean.getProviders() : new ArrayList<>(), lastLoginIdPs);
 
     }
 
@@ -305,13 +312,11 @@ public class ThemeResourceProvider implements RealmResourceProvider {
             SerializedBrokeredIdentityContext serializedCtx = SerializedBrokeredIdentityContext.readFromAuthenticationSession(authSession, "BROKERED_CONTEXT");
             if (serializedCtx != null) {
                 IdentityProviderModel idp = serializedCtx.deserialize(session, authSession).getIdpConfig();
-                return (List)providers.filter((p) -> {
-                    return !Objects.equals(p.getAlias(), idp.getAlias());
-                }).collect(Collectors.toList());
+                return providers.filter(p -> !Objects.equals(p.getAlias(), idp.getAlias())).collect(Collectors.toList());
             }
         }
 
-        return (List)providers.collect(Collectors.toList());
+        return providers.collect(Collectors.toList());
     }
 
 

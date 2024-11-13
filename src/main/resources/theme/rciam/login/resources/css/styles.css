@@ -121,3 +121,8 @@ input[type=text] {
 #kc-page-title > img {
     max-height: 90px;
 }
+
+.idp-container {
+    background-color: #73bcf7 !important;
+    position: relative;
+}

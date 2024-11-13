@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 For Keycloak upstream changelog please see https://www.keycloak.org/docs/latest/release_notes/index.html.
   Full Keycloak upstream jira issue can be shown if filtered by Fix version. For example [Keycloak jira issue for 15.0.2 version](https://issues.redhat.com/browse/KEYCLOAK-19161?jql=project%20%3D%20keycloak%20and%20fixVersion%20%3D%2015.0.2)
 
+## [5.3.2] - 2024-10-31
+### Changed
+- Change ui for last login IdPs
+
 ## [5.3.1] - 2024-10-31
 ### Fixed
 - Fix ui login problem
