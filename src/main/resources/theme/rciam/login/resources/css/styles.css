@@ -97,7 +97,6 @@ input[type=text] {
 }
 
 .pf-c-button.pf-m-control {
-    #border: solid 0px;
     border: 0px;
     border-color: transparent !important;
 }

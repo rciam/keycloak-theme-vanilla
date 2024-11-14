@@ -230,7 +230,7 @@
                 </div>
                 <div ng-if="(idps.length < maxIdPsWithoutSearch) || (fetchParams.keyword!=null && fetchParams.keyword!='')">
                    <ul id="kc-providers-list" class="${properties.kcFormSocialAccountListClass!} login-pf-list-scrollable" on-scroll="scrollCallback($event, $direct)" >
-                      <a ng-repeat="idp in idps" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : idps.length > 3 }" type="button" href="{{idp.loginUrl}}">
+                      <a ng-repeat="idp in idps" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListSecondaryButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : idps.length > 3 }" type="button" href="{{idp.loginUrl}}">
                           <div ng-if="idp.logoUri!=null">
                             <i class="${properties.kcCommonLogoIdP!} fa fa-extend" style="background-image: url({{idp.logoUri}});" aria-hidden="true"></i>
                             <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
@@ -252,7 +252,7 @@
                     </div>
                     <ul class="${properties.kcFormSocialAccountListClass!} ">
                         <a ng-repeat="idp in lastLoginIdPs" id="social-{{idp.alias}}"
-                            class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : promotedIdps.length > 3 }"
+                            class="${properties.kcFormSocialAccountListTertiaryButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : promotedIdps.length > 3 }"
                             type="button" href="{{idp.loginUrl}}"
                             title="${msg('previousLoginProvider')}">
                             <div ng-if="idp.logoUri!=null">
@@ -267,7 +267,7 @@
                                 <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
                             </div>
                         </a>
-                        <a ng-repeat="idp in promotedIdps" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : promotedIdps.length > 3 }" type="button" href="{{idp.loginUrl}}">
+                        <a ng-repeat="idp in promotedIdps" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListTertiaryButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : promotedIdps.length > 3 }" type="button" href="{{idp.loginUrl}}">
                            <div ng-if="idp.logoUri!=null">
                              <i class="${properties.kcCommonLogoIdP!} fa fa-extend" style="background-image: url({{idp.logoUri}});" aria-hidden="true"></i>
                              <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
