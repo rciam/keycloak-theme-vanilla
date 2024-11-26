@@ -35,7 +35,7 @@
 
             var sessionParams = new URL(baseUriOrigin+idpLoginFullUrl).searchParams;
 
-            $scope.maxIdPsWithoutSearch = 6;
+            $scope.maxIdPsWithoutSearch = 1;
             $scope.fetchParams = { 'keyword': null, 'first' : 0, 'max': 20, 'client_id': sessionParams.get('client_id'), 'tab_id': sessionParams.get('tab_id'), 'session_code': sessionParams.get('session_code')};
             $scope.idps = [];
             $scope.hiddenIdps = 0;
