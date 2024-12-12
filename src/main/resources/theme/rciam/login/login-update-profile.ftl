@@ -11,23 +11,23 @@
                 </div>
             </div>
             <#if user.editUsernameAllowed>
-                <div class="${properties.kcFormGroupClass!}" style="display:none;">
-                    <div class="${properties.kcLabelWrapperClass!}">
-                        <label for="username" class="${properties.kcLabelClass!}">${msg("username")}</label>
-                    </div>
-                    <div class="${properties.kcInputWrapperClass!}">
-                        <input type="text" id="username" name="username" value="${(user.username!'')}"
-                               class="${properties.kcInputClass!}" <#if isUpdateProfile?has_content && !isUpdateProfile>readonly</#if>
-                               aria-invalid="<#if messagesPerField.existsError('username')>true</#if>"
-                        />
-
-                        <#if messagesPerField.existsError('username')>
-                            <span id="input-error-username" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
-                                ${kcSanitize(messagesPerField.get('username'))?no_esc}
-                            </span>
-                        </#if>
-                    </div>
+              <div class="${properties.kcFormGroupClass!}">
+                <div class="${properties.kcLabelWrapperClass!}">
+                  <label for="username" class="${properties.kcLabelClass!}">${msg("username")}</label>
                 </div>
+                <div class="${properties.kcInputWrapperClass!}">
+                  <input type="text" id="username" name="username" value="${(user.username!'')}"
+                    class="${properties.kcInputClass!}" <#if isUpdateProfile?has_content && !isUpdateProfile>disabled</#if>
+                    aria-invalid="<#if messagesPerField.existsError('username')>true</#if>"
+                />
+
+                  <#if messagesPerField.existsError('username')>
+                    <span id="input-error-username" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
+                      ${kcSanitize(messagesPerField.get('username'))?no_esc}
+                    </span>
+                  </#if>
+                </div>
+              </div>
             </#if>
             <#if user.editEmailAllowed>
                 <div class="${properties.kcFormGroupClass!}">
@@ -36,7 +36,7 @@
                     </div>
                     <div class="${properties.kcInputWrapperClass!}">
                         <input type="text" id="email" name="email" value="${(user.email!'')}"
-                               class="${properties.kcInputClass!}" <#if isUpdateProfile?has_content && !isUpdateProfile>readonly</#if>
+                               class="${properties.kcInputClass!}" <#if isUpdateProfile?has_content && !isUpdateProfile>disabled</#if>
                                aria-invalid="<#if messagesPerField.existsError('email')>true</#if>"
                         />
 
@@ -55,7 +55,7 @@
                 </div>
                 <div class="${properties.kcInputWrapperClass!}">
                     <input type="text" id="firstName" name="firstName" value="${(user.firstName!'')}"
-                           class="${properties.kcInputClass!}" <#if isUpdateProfile?has_content && !isUpdateProfile>readonly</#if>
+                           class="${properties.kcInputClass!}" <#if isUpdateProfile?has_content && !isUpdateProfile>disabled</#if>
                            aria-invalid="<#if messagesPerField.existsError('firstName')>true</#if>"
                     />
 
