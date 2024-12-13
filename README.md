@@ -145,6 +145,7 @@ This theme is compatible with the custom releases of keycloak which can be found
 | v4.1.2        | 18.0.1-2.1 +      |
 | v5.0.0        | 22.0.5-1.0 +      |
 | v5.3.0        | 22.0.5-1.11 +     |
+| v5.5.0        | 22.0.5-1.12 +     |
 
 If you are using keycloak 16.1.0-X.X.X versions, you **should definitely** use the theme version 4.0.3 which includes a critical fix. 
 Version 5.0.0 and upper is based in Keycloak version 22.0.5 . This means use JDK 17 and Jakarta version.
