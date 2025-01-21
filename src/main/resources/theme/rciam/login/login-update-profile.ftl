@@ -11,7 +11,7 @@
                 </div>
             </div>
             <#if user.editUsernameAllowed>
-              <div class="${properties.kcFormGroupClass!}">
+              <div class="${properties.kcFormGroupClass!} <#if hideUsername?? && hideUsername>dnone</#if>">
                 <div class="${properties.kcLabelWrapperClass!}">
                   <label for="username" class="${properties.kcLabelClass!}">${msg("username")}</label>
                 </div>

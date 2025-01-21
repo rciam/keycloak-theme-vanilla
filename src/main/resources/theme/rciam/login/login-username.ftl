@@ -226,7 +226,7 @@
 
                 <div ng-if="(idps.length >= maxIdPsWithoutSearch && fetchParams.keyword==null) || fetchParams.keyword!=null" class="input-container">
                     <i class="kc-social-provider-logo fa fa-search" id="kc-providers-filter-button"> </i>
-                    <input id="kc-providers-filter" type="text" placeholder="Search your authentication provider" ng-model="fetchParams.keyword" ng-keypress="applySearch($event)"  style="padding: 5px 40px;">
+                    <input id="kc-providers-filter" type="text" placeholder="${msg('searchAuthenticationProvider')}" ng-model="fetchParams.keyword" ng-keypress="applySearch($event)"  style="padding: 5px 40px;">
                 </div>
                 <div ng-if="(idps.length < maxIdPsWithoutSearch) || (fetchParams.keyword!=null && fetchParams.keyword!='')">
                    <ul id="kc-providers-list" class="${properties.kcFormSocialAccountListClass!} login-pf-list-scrollable" on-scroll="scrollCallback($event, $direct)" >
