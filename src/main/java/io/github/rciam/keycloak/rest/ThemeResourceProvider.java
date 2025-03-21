@@ -284,9 +284,11 @@ public class ThemeResourceProvider implements RealmResourceProvider {
             try {
                 List<String> lastLoginIdPAlias = JsonSerialization.readValue(URLDecoder.decode(cookieValues.iterator().next(), StandardCharsets.UTF_8), List.class);
                 IdentityProviderBean lastLoginIdPBean = new IdentityProviderBean(realm, session, lastLoginIdPAlias.stream().map(realm::getIdentityProviderByAlias).filter(Objects::nonNull).collect(Collectors.toList()), URI.create(""));
-                lastLoginIdPs.addAll(lastLoginIdPBean.getProviders());
-                //remove last login IdPs from promoted
-                promotedProviders.removeIf(idp -> lastLoginIdPAlias.contains(idp.getAlias()));
+                if (lastLoginIdPBean.getProviders() != null) {
+                    lastLoginIdPs.addAll(lastLoginIdPBean.getProviders());
+                    //remove last login IdPs from promoted
+                    promotedProviders.removeIf(idp -> lastLoginIdPAlias.contains(idp.getAlias()));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
