@@ -14,3 +14,17 @@ target
 # should not be ignored
 #bin/
 .factorypath
+
+# React #
+################
+node
+src/main/resources/theme/rciam/account/src/web_modules
+src/main/resources/theme/rciam/account/src/node_modules
+src/main/resources/theme/rciam/account/resources/content
+src/main/resources/theme/rciam/account/group-widgets
+src/main/resources/theme/rciam/account/resources/group-widgets
+src/main/resources/theme/rciam/account/resources/groups-mngnt-service
+src/main/resources/theme/rciam/account/resources/widgets
+src/main/resources/theme/rciam/account/resources/js
+megalinter-reports/
+src/main/resources/theme/rciam/account/src/app.css
