@@ -10,10 +10,13 @@
     <packaging>jar</packaging>
 
     <properties>
+        <dir.account2>src/main/resources/theme/rciam/account/src</dir.account2>
+        <args.npm.install>ci --no-optional --ignore-scripts</args.npm.install>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <keycloak.version>22.0.5</keycloak.version>
         <infinispan.version>14.0.17.Final</infinispan.version>
+         <node.version>v16.20.0</node.version>
     </properties>
 
     <organization>
@@ -62,7 +65,66 @@
 
 
     <build>
+            <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/node_modules/rcue/**</exclude>
+                    <exclude>**/node_modules/**/node_modules/**</exclude>
+                    <exclude>**/minimist/**</exclude>
+                    <exclude>**/mkdirp/**</exclude>
+                    <exclude>**/package.json</exclude>
+                    <exclude>**/package-lock.json</exclude>
+                    <exclude>**/component.json</exclude>
+                    <exclude>**/composer.json</exclude>
+                    <exclude>**/npm-shrinkwrap.json</exclude>
+                    <exclude>**/select2.jquery.json</exclude>
+                    <exclude>**/*.markdown</exclude>
+                    <exclude>**/*.swf</exclude>
+                    <exclude>**/*.sh</exclude>
+                    <exclude>**/.bin/**</exclude>
+                    <exclude>**/bin/**</exclude>
+                    <exclude>**/build/**</exclude>
+                    <exclude>**/docs/**</exclude>
+                    <exclude>**/demo/**</exclude>
+                    <exclude>**/devtools/**</exclude>
+                    <exclude>**/example/**</exclude>
+                    <exclude>**/examples/**</exclude>
+                    <exclude>**/grunt/**</exclude>
+                    <exclude>**/less/**</exclude>
+                    <exclude>**/sass/**</exclude>
+                    <exclude>**/scss/**</exclude>
+                    <exclude>**/jquery/src/**</exclude>
+                    <exclude>**/angular-treeview/src/**</exclude>
+                    <exclude>**/test/**</exclude>
+                    <exclude>**/tests/**</exclude>
+                    <exclude>**/_config.yml</exclude>
+                    <exclude>**/api.md</exclude>
+                    <exclude>**/AUTHORS.txt</exclude>
+                    <exclude>**/CHANGELOG.md</exclude>
+                    <exclude>**/CONTRIBUTING.md</exclude>
+                    <exclude>**/HELP-US-OUT.txt</exclude>
+                    <exclude>**/README.md</exclude>
+                    <exclude>**/Gruntfile.js</exclude>
+                    <exclude>**/Gemfile*</exclude>
+                    <exclude>**/.*</exclude>
+
+                    <!-- Remove once rcue stops shipping this file -->
+                    <exclude>**/git-Logo.svg</exclude>
+
+                    <exclude>**/rciam/account/src/**</exclude>
+                </excludes>
+            </resource>
+        </resources>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>16</source>
+                    <target>16</target>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
@@ -74,6 +136,72 @@
 
         <finalName>${artifactId}</finalName>
     </build>
+    <profiles>
+        <profile>
+            <id>account2</id>
+            <activation>
+                <property>
+                    <name>!skipAccount2</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-clean-plugin</artifactId>
+                        <configuration>
+                            <filesets>
+                                <fileset>
+                                    <directory>${dir.account2}/web_modules</directory>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <executions>
+                            <!-- Download NPM tools -->
+                            <execution>
+                                <id>setup-node</id>
+                                <goals>
+                                    <goal>install-node-and-npm</goal>
+                                </goals>
+                                <phase>initialize</phase>
+                            </execution>
+                            <!-- Compile stuff -->
+                            <execution>
+                                <id>compile-account2</id>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
+                                <phase>generate-resources</phase>
+                                <configuration>
+                                    <workingDirectory>${dir.account2}</workingDirectory>
+                                    <arguments>run build --scripts-prepend-node-path</arguments>
+                                </configuration>
+                            </execution>
+                            <!-- Download NPM packages -->
+                            <execution>
+                                <id>npm-install-account2</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>npm</goal>
+                                </goals>
+                                <configuration>
+                                    <workingDirectory>${dir.account2}</workingDirectory>
+                                    <arguments>${args.npm.install}</arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <nodeVersion>${node.version}</nodeVersion>
+                            <installDirectory>${project.basedir}</installDirectory>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
 
+    </profiles>
 
 </project>
