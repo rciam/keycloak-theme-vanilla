@@ -8,7 +8,7 @@ For Keycloak upstream changelog please see https://www.keycloak.org/docs/latest/
   Full Keycloak upstream jira issue can be shown if filtered by Fix version. For example [Keycloak jira issue for 15.0.2 version](https://issues.redhat.com/browse/KEYCLOAK-19161?jql=project%20%3D%20keycloak%20and%20fixVersion%20%3D%2015.0.2)
 
 
-## [5.8.0] - 2025-05-05
+## [5.8.0] - 2025-05-06
 
 ### Added
 - React in Account Console

@@ -232,17 +232,6 @@ export class AccountPage extends React.Component<
                   )}
                 </FormGroup>
               )}
-            {fields.attributes?.uid && ( // Conditionally render the UID field
-              <FormGroup label={Msg.localize("uid")} fieldId="uid">
-                <TextInput
-                  isDisabled
-                  type="text"
-                  id="uid"
-                  name="uid"
-                  value={fields.attributes.uid[0]} // Display the first UID value
-                />
-              </FormGroup>
-            )}
             {!this.isUpdateEmailFeatureEnabled && (
               <FormGroup
                 label={Msg.localize("email")}
@@ -383,6 +372,17 @@ export class AccountPage extends React.Component<
                 ></TextInput>
               )}
             </FormGroup>
+            {fields.attributes?.uid && ( // Conditionally render the UID field
+              <FormGroup label={Msg.localize("uid")} fieldId="uid">
+                <TextInput
+                  isDisabled
+                  type="text"
+                  id="uid"
+                  name="uid"
+                  value={fields.attributes.uid[0]} // Display the first UID value
+                />
+              </FormGroup>
+            )}
             {features.isInternationalizationEnabled && (
               <FormGroup
                 label={Msg.localize("selectLocale")}
