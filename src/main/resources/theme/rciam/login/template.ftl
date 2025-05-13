@@ -1,4 +1,4 @@
-<#macro registrationLayout bodyClass="" displayInfo=false displayMessage=true displayRequiredFields=false showAnotherWayIfPresent=true>
+<#macro registrationLayout bodyClass="" displayInfo=false displayMessage=true displayRequiredFields=false showAnotherWayIfPresent=true showUsernameHeader=true>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" class="${properties.kcHtmlClass!}"<#if realm.internationalizationEnabled> lang="${locale.currentLanguageTag}"</#if>>
 
@@ -60,26 +60,40 @@
                     </div>
                 </div>
             </#if>
-        <#if !(auth?has_content && auth.showUsername() && !auth.showResetCredentials())>
-            <#if displayRequiredFields>
-                <div class="${properties.kcContentWrapperClass!}">
-                    <div class="${properties.kcLabelWrapperClass!} subtitle">
-                        <span class="subtitle"><span class="required">*</span> ${msg("requiredFields")}</span>
-                    </div>
-                    <div class="col-md-10">
+            <#if showUsernameHeader>
+                <#if !(auth?has_content && auth.showUsername() && !auth.showResetCredentials())>
+                    <#if displayRequiredFields>
+                        <div class="${properties.kcContentWrapperClass!}">
+                            <div class="${properties.kcLabelWrapperClass!} subtitle">
+                                <span class="subtitle"><span class="required">*</span> ${msg("requiredFields")}</span>
+                            </div>
+                            <div class="col-md-10">
+                                <h1 id="kc-page-title"><#nested "header"></h1>
+                            </div>
+                        </div>
+                    <#else>
                         <h1 id="kc-page-title"><#nested "header"></h1>
-                    </div>
-                </div>
-            <#else>
-                <h1 id="kc-page-title"><#nested "header"></h1>
-            </#if>
-        <#else>
-            <#if displayRequiredFields>
-                <div class="${properties.kcContentWrapperClass!}">
-                    <div class="${properties.kcLabelWrapperClass!} subtitle">
-                        <span class="subtitle"><span class="required">*</span> ${msg("requiredFields")}</span>
-                    </div>
-                    <div class="col-md-10">
+                    </#if>
+                <#else>
+                    <#if displayRequiredFields>
+                        <div class="${properties.kcContentWrapperClass!}">
+                            <div class="${properties.kcLabelWrapperClass!} subtitle">
+                                <span class="subtitle"><span class="required">*</span> ${msg("requiredFields")}</span>
+                            </div>
+                            <div class="col-md-10">
+                                <#nested "show-username">
+                                <div id="kc-username" class="${properties.kcFormGroupClass!}">
+                                    <label id="kc-attempted-username">${auth.attemptedUsername}</label>
+                                    <a id="reset-login" href="${url.loginRestartFlowUrl}">
+                                        <div class="kc-login-tooltip">
+                                            <i class="${properties.kcResetFlowIcon!}"></i>
+                                            <span class="kc-tooltip-text">${msg("restartLoginTooltip")}</span>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    <#else>
                         <#nested "show-username">
                         <div id="kc-username" class="${properties.kcFormGroupClass!}">
                             <label id="kc-attempted-username">${auth.attemptedUsername}</label>
@@ -90,24 +104,12 @@
                                 </div>
                             </a>
                         </div>
-                    </div>
-                </div>
-            <#else>
-                <#nested "show-username">
-                <div id="kc-username" class="${properties.kcFormGroupClass!}">
-                    <label id="kc-attempted-username">${auth.attemptedUsername}</label>
-                    <a id="reset-login" href="${url.loginRestartFlowUrl}">
-                        <div class="kc-login-tooltip">
-                            <i class="${properties.kcResetFlowIcon!}"></i>
-                            <span class="kc-tooltip-text">${msg("restartLoginTooltip")}</span>
-                        </div>
-                    </a>
-                </div>
+                    </#if>
+                </#if>
             </#if>
-        </#if>
-      </header>
-      <div id="kc-content">
-        <div id="kc-content-wrapper">
+        </header>
+        <div id="kc-content">
+            <div id="kc-content-wrapper">
 
           <#-- App-initiated actions should not see warning messages about the need to complete the action -->
           <#-- during login.                                                                               -->
