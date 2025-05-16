@@ -14,6 +14,22 @@
                 </div>
             </div>
 
+            <!-- Show username in a nice way -->
+            <#if auth?has_content && auth.attemptedUsername?has_content>
+            <div class="${properties.kcFormGroupClass!}">
+                <div class="${properties.kcLabelWrapperClass!}">
+                    <label for="kc-attempted-username" style="font-weight:bold;">${msg("username")}</label>
+                </div>
+                <div class="${properties.kcInputWrapperClass!}">
+                    <span id="kc-attempted-username"
+                          title="${auth.attemptedUsername}"
+                          style="display:inline-block; max-width:100%; font-family:monospace; font-size:0.85em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:#f5f5f5; padding:6px 12px; border-radius:4px;">
+                        ${auth.attemptedUsername}
+                    </span>
+                </div>
+            </div>
+            </#if>
+
             <#if otpLogin.userOtpCredentials?size gt 1>
                 <div class="${properties.kcFormGroupClass!}">
                     <div class="${properties.kcInputWrapperClass!}">
