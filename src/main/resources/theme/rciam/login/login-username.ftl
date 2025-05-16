@@ -1,7 +1,7 @@
 <#import "template.ftl" as layout>
 
 <#-- <script src="${url.resourcesCommonPath}/node_modules/jquery/dist/jquery.min.js" type="text/javascript"></script>  -->
-    <script src="${url.resourcesCommonPath}/node_modules/angular/angular.min.js"></script>
+    <script src="${url.resourcesPath}/js/angular.min.js"></script>
 
     <script>
         var idpLoginFullUrl = '${idpLoginFullUrl?no_esc}';
