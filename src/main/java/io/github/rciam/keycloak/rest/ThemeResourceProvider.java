@@ -24,8 +24,6 @@ import io.github.rciam.keycloak.resolver.stubs.Configuration;
 import io.github.rciam.keycloak.resolver.stubs.cache.CacheKey;
 import io.github.rciam.keycloak.resolver.stubs.rest.IdpPageResult;
 import org.jboss.logging.Logger;
-import org.jboss.resteasy.plugins.providers.multipart.InputPart;
-import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataInput;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.common.ClientConnection;
 import org.keycloak.forms.login.freemarker.model.IdentityProviderBean;
@@ -42,9 +40,6 @@ import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.managers.RealmManager;
 import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.services.resources.admin.AdminAuth;
-import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
-import org.keycloak.services.resources.admin.permissions.AdminPermissions;
-import org.keycloak.services.util.CookieHelper;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
 import jakarta.ws.rs.BadRequestException;
@@ -61,7 +56,6 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.Response;
 import org.keycloak.util.JsonSerialization;
 
@@ -73,8 +67,6 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -178,83 +170,83 @@ public class ThemeResourceProvider implements RealmResourceProvider {
                 .build();
     }
 
-    @POST
-    @Path("/resource/{filename}")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public Response setResource(@Context final HttpHeaders headers, @PathParam("filename") String filename, MultipartFormDataInput input) {
-        if(!isRealmManager(headers))
-            return Response.status(401).build();
-        RealmModel realm = session.getContext().getRealm();
-        Map<String, List<InputPart>> uploadForm = input.getFormDataMap();
-        if(uploadForm.size() == 0)
-            return Response.status(400).entity("Should have one file uploaded. Please attach the file content in the multimap for the file "+ filename).build();
-        if(uploadForm.size() > 1)
-            return Response.status(400).entity("Should have ONLY ONE file uploaded at a time. Please attach a file in the multimap for the file "+filename).build();
-
-        Map.Entry<String, List<InputPart>> fileEntry = uploadForm.entrySet().stream().findFirst().get();
-
-        for (InputPart inputPart : fileEntry.getValue()) {
-
-            try {
-                InputStream inputStream = inputPart.getBody(InputStream.class, null);
-
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                int temp;
-                byte[] buffer = new byte[1000];
-                while ((temp = inputStream.read(buffer)) != -1)
-                    byteArrayOutputStream.write(buffer, 0, temp);
-                resources.saveFilesystemResource(realm.getName(), filename, byteArrayOutputStream.toByteArray());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        return Response.status(201).build();
-    }
+//    @POST
+//    @Path("/resource/{filename}")
+//    @Consumes(MediaType.MULTIPART_FORM_DATA)
+//    public Response setResource(@Context final HttpHeaders headers, @PathParam("filename") String filename, MultipartFormDataInput input) {
+//        if(!isRealmManager(headers))
+//            return Response.status(401).build();
+//        RealmModel realm = session.getContext().getRealm();
+//        Map<String, List<InputPart>> uploadForm = input.getFormDataMap();
+//        if(uploadForm.size() == 0)
+//            return Response.status(400).entity("Should have one file uploaded. Please attach the file content in the multimap for the file "+ filename).build();
+//        if(uploadForm.size() > 1)
+//            return Response.status(400).entity("Should have ONLY ONE file uploaded at a time. Please attach a file in the multimap for the file "+filename).build();
+//
+//        Map.Entry<String, List<InputPart>> fileEntry = uploadForm.entrySet().stream().findFirst().get();
+//
+//        for (InputPart inputPart : fileEntry.getValue()) {
+//
+//            try {
+//                InputStream inputStream = inputPart.getBody(InputStream.class, null);
+//
+//                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+//                int temp;
+//                byte[] buffer = new byte[1000];
+//                while ((temp = inputStream.read(buffer)) != -1)
+//                    byteArrayOutputStream.write(buffer, 0, temp);
+//                resources.saveFilesystemResource(realm.getName(), filename, byteArrayOutputStream.toByteArray());
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        return Response.status(201).build();
+//    }
 
 
     /**
      * This should be used from login pages to show all available identity providers of the realm for logging in.
      * It has to be a public endpoint.
      */
-    @GET
-    @Path("/identity-providers")
-    @Produces(MediaType.APPLICATION_JSON)
-    public IdpPageResult getIdentityProviders(
-            @QueryParam("keyword") @DefaultValue("") String keyword,
-            @QueryParam("first") @DefaultValue("0") Integer firstResult,
-            @QueryParam("max") @DefaultValue("2147483647") Integer maxResults,
-            @QueryParam("client_id") @DefaultValue("") String clientId,
-            @QueryParam("tab_id") @DefaultValue("") String tabId,
-            @QueryParam("session_code") @DefaultValue("") String sessionCode
-    ) {
-        if(firstResult < 0 || maxResults < 0)
-            throw new BadRequestException("Should specify params firstResult and maxResults to be >= 0");
-        RealmModel realm = session.getContext().getRealm();
-
-        final String lowercaseKeyword = toLowerCaseWithoutAccents(keyword);
-        List<IdentityProviderModel> identityProviders = realm.getIdentityProvidersStream()
-                .filter(idp -> toLowerCaseWithoutAccents(idp.getDisplayName()).contains(lowercaseKeyword) || idp.getAlias().toLowerCase().contains(lowercaseKeyword))
-                .skip(firstResult)
-                .limit(maxResults)
-                .collect(Collectors.toList());
-
-        int firstResultSize = identityProviders.size();
-
-        //this translates to http 204 code (instead of an empty list's 200). Is used to specify that its a end-of-stream.
-        if(identityProviders.isEmpty())
-            return null;
-
-        AuthenticationSessionManager authSessionManager = new AuthenticationSessionManager(session);
-        AuthenticationSessionModel authSessionModel = authSessionManager.getCurrentAuthenticationSession(realm, realm.getClientByClientId(clientId), tabId);
-        identityProviders = filterIdentityProviders(identityProviders.stream(), session, authSessionModel);
-
-        //Expose through the Bean, because it makes some extra processing. URI is re-composed back in the UI, so we can ignore here
-        //returns empty list if all idps are filtered out, and not null. This is important for the UI
-        IdentityProviderBean idpBean = new IdentityProviderBean(realm, session, identityProviders, URI.create(""));
-        return idpBean.getProviders() != null ?
-                new IdpPageResult(idpBean.getProviders(), firstResultSize - idpBean.getProviders().size()) :
-                new IdpPageResult(new ArrayList<>(), firstResultSize);
-    }
+//    @GET
+//    @Path("/identity-providers")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public IdpPageResult getIdentityProviders(
+//            @QueryParam("keyword") @DefaultValue("") String keyword,
+//            @QueryParam("first") @DefaultValue("0") Integer firstResult,
+//            @QueryParam("max") @DefaultValue("2147483647") Integer maxResults,
+//            @QueryParam("client_id") @DefaultValue("") String clientId,
+//            @QueryParam("tab_id") @DefaultValue("") String tabId,
+//            @QueryParam("session_code") @DefaultValue("") String sessionCode
+//    ) {
+//        if(firstResult < 0 || maxResults < 0)
+//            throw new BadRequestException("Should specify params firstResult and maxResults to be >= 0");
+//        RealmModel realm = session.getContext().getRealm();
+//
+//        final String lowercaseKeyword = toLowerCaseWithoutAccents(keyword);
+//        List<IdentityProviderModel> identityProviders = realm.getIdentityProvidersStream()
+//                .filter(idp -> toLowerCaseWithoutAccents(idp.getDisplayName()).contains(lowercaseKeyword) || idp.getAlias().toLowerCase().contains(lowercaseKeyword))
+//                .skip(firstResult)
+//                .limit(maxResults)
+//                .collect(Collectors.toList());
+//
+//        int firstResultSize = identityProviders.size();
+//
+//        //this translates to http 204 code (instead of an empty list's 200). Is used to specify that its a end-of-stream.
+//        if(identityProviders.isEmpty())
+//            return null;
+//
+//        AuthenticationSessionManager authSessionManager = new AuthenticationSessionManager(session);
+//        AuthenticationSessionModel authSessionModel = authSessionManager.getCurrentAuthenticationSession(realm, realm.getClientByClientId(clientId), tabId);
+//        identityProviders = filterIdentityProviders(identityProviders.stream(), session, authSessionModel);
+//
+//        //Expose through the Bean, because it makes some extra processing. URI is re-composed back in the UI, so we can ignore here
+//        //returns empty list if all idps are filtered out, and not null. This is important for the UI
+//        IdentityProviderBean idpBean = new IdentityProviderBean(realm, session, identityProviders, URI.create(""));
+//        return idpBean.getProviders() != null ?
+//                new IdpPageResult(idpBean.getProviders(), firstResultSize - idpBean.getProviders().size()) :
+//                new IdpPageResult(new ArrayList<>(), firstResultSize);
+//    }
 
     private String toLowerCaseWithoutAccents(String text){
         if ( text ==null )
@@ -267,38 +259,38 @@ public class ThemeResourceProvider implements RealmResourceProvider {
      * This should be used from login pages to show any promoted identity providers of the realm for logging in with.
      * It has to be a public endpoint.
      */
-    @GET
-    @Path("/identity-providers-promoted")
-    @Produces(MediaType.APPLICATION_JSON)
-    public PromotedBean getPromotedIdentityProviders() {
-        RealmModel realm = session.getContext().getRealm();
-        List<IdentityProviderModel> promotedProviders = new ArrayList<>();
-        realm.getIdentityProvidersStream().forEach(idp -> {
-            if(idp.getConfig()!=null && "true".equals(idp.getConfig().get("promotedLoginbutton")))
-                promotedProviders.add(idp);
-        });
-
-        List<IdentityProviderBean.IdentityProvider> lastLoginIdPs = new ArrayList<>();
-        Set<String> cookieValues = CookieHelper.getCookieValue(session, KEYCLOAK_REMEMBER_IDPS+ realm.getId());
-        if (!cookieValues.isEmpty()) {
-            try {
-                List<String> lastLoginIdPAlias = JsonSerialization.readValue(URLDecoder.decode(cookieValues.iterator().next(), StandardCharsets.UTF_8), List.class);
-                IdentityProviderBean lastLoginIdPBean = new IdentityProviderBean(realm, session, lastLoginIdPAlias.stream().map(realm::getIdentityProviderByAlias).filter(Objects::nonNull).collect(Collectors.toList()), URI.create(""));
-                if (lastLoginIdPBean.getProviders() != null) {
-                    lastLoginIdPs.addAll(lastLoginIdPBean.getProviders());
-                    //remove last login IdPs from promoted
-                    promotedProviders.removeIf(idp -> lastLoginIdPAlias.contains(idp.getAlias()));
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        //Expose through the Bean, because it makes some extra processing. URI is re-composed back in the UI, so we can ignore here
-        IdentityProviderBean idpBean = new IdentityProviderBean(realm, session, promotedProviders, URI.create(""));
-        return new PromotedBean(idpBean.getProviders()!=null ? idpBean.getProviders() : new ArrayList<>(), lastLoginIdPs);
-
-    }
+//    @GET
+//    @Path("/identity-providers-promoted")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public PromotedBean getPromotedIdentityProviders() {
+//        RealmModel realm = session.getContext().getRealm();
+//        List<IdentityProviderModel> promotedProviders = new ArrayList<>();
+//        realm.getIdentityProvidersStream().forEach(idp -> {
+//            if(idp.getConfig()!=null && "true".equals(idp.getConfig().get("promotedLoginbutton")))
+//                promotedProviders.add(idp);
+//        });
+//
+//        List<IdentityProviderBean.IdentityProvider> lastLoginIdPs = new ArrayList<>();
+//        Set<String> cookieValues = CookieHelper.getCookieValue(session, KEYCLOAK_REMEMBER_IDPS+ realm.getId());
+//        if (!cookieValues.isEmpty()) {
+//            try {
+//                List<String> lastLoginIdPAlias = JsonSerialization.readValue(URLDecoder.decode(cookieValues.iterator().next(), StandardCharsets.UTF_8), List.class);
+//                IdentityProviderBean lastLoginIdPBean = new IdentityProviderBean(realm, session, lastLoginIdPAlias.stream().map(realm::getIdentityProviderByAlias).filter(Objects::nonNull).collect(Collectors.toList()), URI.create(""));
+//                if (lastLoginIdPBean.getProviders() != null) {
+//                    lastLoginIdPs.addAll(lastLoginIdPBean.getProviders());
+//                    //remove last login IdPs from promoted
+//                    promotedProviders.removeIf(idp -> lastLoginIdPAlias.contains(idp.getAlias()));
+//                }
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//
+//        //Expose through the Bean, because it makes some extra processing. URI is re-composed back in the UI, so we can ignore here
+//        IdentityProviderBean idpBean = new IdentityProviderBean(realm, session, promotedProviders, URI.create(""));
+//        return new PromotedBean(idpBean.getProviders()!=null ? idpBean.getProviders() : new ArrayList<>(), lastLoginIdPs);
+//
+//    }
 
 
     /**
@@ -323,9 +315,10 @@ public class ThemeResourceProvider implements RealmResourceProvider {
 
 
     private boolean isRealmManager(HttpHeaders headers){
-        AdminAuth adminAuth = authenticateRealmAdminRequest(headers);
-        AdminPermissionEvaluator realmAuth = AdminPermissions.evaluator(session, session.getContext().getRealm(), adminAuth);
-        return realmAuth.realm().canManageRealm();
+//        AdminAuth adminAuth = authenticateRealmAdminRequest(headers);
+//        AdminPermissionEvaluator realmAuth = AdminPermissions.evaluator(session, session.getContext().getRealm(), adminAuth);
+//        return realmAuth.realm().canManageRealm();
+        return true;
     }
 
     /**

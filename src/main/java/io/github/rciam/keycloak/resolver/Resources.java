@@ -10,7 +10,6 @@ import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
-import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.DefaultCacheManager;
 import org.jboss.logging.Logger;
 import org.keycloak.cluster.ClusterEvent;
@@ -104,7 +103,6 @@ public class Resources {
             Configuration cacheConfiguration = cacheConfigBuilder
                     .simpleCache(true)
                     .memory()
-                    .whenFull(EvictionStrategy.REMOVE)
                     .maxCount(MAX_RESOURCES_IN_CACHE)
                     .build();
             realmsResources = cacheManager.administration().withFlags(CacheContainerAdmin.AdminFlag.VOLATILE).getOrCreateCache(CACHE_NAME, cacheConfiguration);
