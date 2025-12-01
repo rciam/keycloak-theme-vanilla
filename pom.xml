@@ -10,8 +10,9 @@
     <packaging>jar</packaging>
 
     <properties>
-        <dir.account2>src/main/resources/theme/rciam/account/src</dir.account2>
-        <args.npm.install>ci --no-optional --ignore-scripts</args.npm.install>
+        <!-- Root of the v26 account UI project (where package.json, src, public live) -->
+        <account.ui.dir>src/main/resources/theme/rciam/account</account.ui.dir>
+
         <maven.compiler.release>21</maven.compiler.release>
         <keycloak.version>26.4.4</keycloak.version>
         <infinispan.version>15.0.19.Final</infinispan.version>
@@ -50,6 +51,8 @@
             <version>${keycloak.version}</version>
             <scope>provided</scope>
         </dependency>
+
+        <!-- Infinispan -->
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-bom</artifactId>
@@ -73,6 +76,7 @@
 
     <build>
         <resources>
+            <!-- Base resources from src/main/resources -->
             <resource>
                 <directory>src/main/resources</directory>
                 <excludes>
@@ -81,12 +85,21 @@
                     <exclude>**/README.md</exclude>
                     <exclude>**/docs/**</exclude>
                     <exclude>**/example/**</exclude>
+                    <!-- Exclude TypeScript sources of the account UI from final JAR -->
                     <exclude>**/rciam/account/src/**</exclude>
                 </excludes>
+            </resource>
+
+            <!-- Built frontend: dist/ under the account UI dir -->
+            <resource>
+                <directory>${account.ui.dir}/dist</directory>
+                <!-- Where it appears inside the JAR (Keycloak theme layout) -->
+                <targetPath>theme/rciam/account/resources</targetPath>
             </resource>
         </resources>
 
         <plugins>
+            <!-- Java compiler -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -96,7 +109,7 @@
                 </configuration>
             </plugin>
 
-            <!-- WildFly plugin -->
+            <!-- WildFly plugin (unchanged) -->
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
@@ -105,74 +118,58 @@
                     <skip>false</skip>
                 </configuration>
             </plugin>
+
+            <!-- Frontend: build v26 account UI with npm inside account.ui.dir -->
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.15.0</version>
+                <configuration>
+                    <nodeVersion>${node.version}</nodeVersion>
+                    <!-- Where Node will be installed -->
+                    <installDirectory>${project.basedir}</installDirectory>
+                </configuration>
+                <executions>
+                    <!-- Install Node + npm -->
+                    <execution>
+                        <id>install-node-and-npm</id>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+
+                    <!-- npm install in the account UI directory -->
+                    <execution>
+                        <id>npm-install-account-ui</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <workingDirectory>${account.ui.dir}</workingDirectory>
+                            <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+
+                    <!-- npm run build in the account UI directory -->
+                    <execution>
+                        <id>npm-build-account-ui</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <workingDirectory>${account.ui.dir}</workingDirectory>
+                            <arguments>run build</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
 
         <finalName>${artifactId}</finalName>
     </build>
-    <profiles>
-        <profile>
-            <id>account2</id>
-            <activation>
-                <property>
-                    <name>!skipAccount2</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-clean-plugin</artifactId>
-                        <version>3.3.2</version>
-                        <configuration>
-                            <filesets>
-                                <fileset>
-                                    <directory>${dir.account2}/web_modules</directory>
-                                </fileset>
-                            </filesets>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>com.github.eirslett</groupId>
-                        <artifactId>frontend-maven-plugin</artifactId>
-                        <version>1.15.0</version>
-                        <executions>
-                            <!-- Download NPM tools -->
-                            <execution>
-                                <id>setup-node</id>
-                                <goals>
-                                    <goal>install-node-and-npm</goal>
-                                </goals>
-                                <phase>initialize</phase>
-                            </execution>
-                            <execution>
-                                <id>compile-account2</id>
-                                <phase>initialize</phase>
-                                <goals>
-                                    <goal>npm</goal>
-                                </goals>
-                                <configuration>
-                                    <workingDirectory>${dir.account2}</workingDirectory>
-                                    <arguments>${args.npm.install}</arguments>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>npm-install-account2</id>
-                                <phase>generate-resources</phase>
-                                <goals>
-                                    <goal>npm</goal>
-                                </goals>
-                                <configuration>
-                                    <workingDirectory>${dir.account2}</workingDirectory>
-                                    <arguments>run build --scripts-prepend-node-path</arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <nodeVersion>${node.version}</nodeVersion>
-                            <installDirectory>${project.basedir}</installDirectory>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+
+    <!-- Old account2 profile removed; v26 account UI is handled by the main build now. -->
 </project>
