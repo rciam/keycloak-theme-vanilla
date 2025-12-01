@@ -1,0 +1,72 @@
+.rciam-footer {
+  width: 60%;
+  margin: 30px auto 5px;
+  padding: 10px;
+  text-align: center;
+  background-color: white;
+}
+
+.rciam-footer-support {
+  text-align: left;
+}
+
+.rciam-footer-logos {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.rciam-footer-links {
+  text-align: right;
+}
+
+.rciam-footer-text-wrapper {
+  margin-top: 7px;
+}
+
+/* Reuse your old utility class */
+.horizontal-padding-10 {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+/* Corner ribbon from old CSS */
+.corner-ribbon {
+  width: 200px;
+  background: #e43;
+  position: absolute;
+  top: 25px;
+  left: -50px;
+  text-align: center;
+  line-height: 40px;
+  letter-spacing: 1px;
+  color: #f0f0f0;
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+  z-index: 1000;
+}
+
+/* If you still use these anywhere in the account console: */
+.fa-extend {
+  background-repeat: no-repeat !important;
+  background-position: 50% center;
+  background-size: 70%;
+}
+
+.orcid-logo {
+  background-image: url("../img/orcid-logo.png");
+}
+
+.grnet-logo {
+  background-image: url("../img/grnet.png");
+}
+
+
+.rciam-footer-support,
+.rciam-footer-logos,
+.rciam-footer-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

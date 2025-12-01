@@ -12,7 +12,7 @@ import {
   SigningIn,
   PersonalInfo
 } from "@keycloak/keycloak-account-ui";
-// /import { MyPage } from "./MyPage";
+
 export const DeviceActivityRoute: RouteObject = {
   path: "account-security/device-activity",
   element: <DeviceActivity />,
