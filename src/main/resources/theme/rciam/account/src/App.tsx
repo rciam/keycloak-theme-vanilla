@@ -1,4 +1,6 @@
 import { Page, Spinner } from "@patternfly/react-core";
+import style from "./App.module.css";
+
 import {
   AccountEnvironment,
   Header,
@@ -7,24 +9,26 @@ import {
 } from "@keycloak/keycloak-account-ui";
 import { Suspense, useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
-import { Footer } from "./Footer";
-import style from "./App.module.css";
 
 type ThemeConfig = Record<string, string[]>;
 
 export const useThemeConfig = () => {
-  const context = useEnvironment<AccountEnvironment>();
+  interface ExtendedEnvironment extends AccountEnvironment {
+    authUrl: string;
+  }
+
+  const context = useEnvironment<ExtendedEnvironment>();
   const [config, setConfig] = useState<ThemeConfig | null>(null);
   const [error, setError] = useState<unknown>(null);
 
   useEffect(() => {
     const controller = new AbortController();
     const { signal } = controller;
-    console.log(context.environment.serverBaseUrl);
-    const realm = context.environment.realm;
-    const serverBaseUrl = context.environment.serverBaseUrl.replace(/\/$/, "");
 
-    fetch(`${serverBaseUrl}/realms/${realm}/theme-info/theme-config`, {
+    const authServerUrl = context.environment.authUrl;
+    const realm = context.environment.realm;
+
+    fetch(`${authServerUrl}realms/${realm}/theme-info/theme-config`, {
       signal,
       credentials: "include",
     })
@@ -46,27 +50,26 @@ export const useThemeConfig = () => {
 
     return () => controller.abort();
   }, [context.environment.baseUrl, context.environment.realm]);
+
   return { config, error };
 };
-
 function App() {
+  const context = useEnvironment<AccountEnvironment>();
   // const realm = context.environment.realm;
   const { config } = useThemeConfig();
   console.log(config);
+  console.log(context);
   return (
-    <>
-      <Page
-        className={style.headerLogo}
-        header={<Header />}
-        sidebar={<PageNav />}
-        isManagedSidebar
-      >
-        <Suspense fallback={<Spinner />}>
-          <Outlet />
-        </Suspense>
-      </Page>
-      <Footer config={config} />
-    </>
+    <Page
+      className={style.headerLogo}
+      header={<Header />}
+      sidebar={<PageNav />}
+      isManagedSidebar
+    >
+      <Suspense fallback={<Spinner />}>
+        <Outlet />
+      </Suspense>
+    </Page>
   );
 }
 

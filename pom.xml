@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <!-- Root of the account UI project (where package.json, src, public live) -->
+        <!-- Root of the v26 account UI project (where package.json, src, public live) -->
         <account.ui.dir>src/main/resources/theme/rciam/account</account.ui.dir>
 
         <maven.compiler.release>21</maven.compiler.release>
@@ -76,7 +76,7 @@
 
     <build>
         <resources>
-            <!-- All static resources under src/main/resources, except TSX & build artifacts -->
+            <!-- Base resources from src/main/resources -->
             <resource>
                 <directory>src/main/resources</directory>
                 <excludes>
@@ -85,16 +85,17 @@
                     <exclude>**/README.md</exclude>
                     <exclude>**/docs/**</exclude>
                     <exclude>**/example/**</exclude>
-                    <!-- Exclude React source for the account UI -->
+                    <!-- Exclude TypeScript sources of the account UI from final JAR -->
                     <exclude>**/rciam/account/src/**</exclude>
                     <!-- Exclude dist here; we'll map it explicitly below -->
                     <exclude>**/rciam/account/dist/**</exclude>
                 </excludes>
             </resource>
 
-            <!-- Built frontend: dist/ under account.ui.dir -> theme/rciam/account/resources -->
+            <!-- Built frontend: dist/ under the account UI dir -->
             <resource>
                 <directory>${account.ui.dir}/dist</directory>
+                <!-- Where it appears inside the JAR (Keycloak theme layout) -->
                 <targetPath>theme/rciam/account/resources</targetPath>
             </resource>
         </resources>
@@ -110,7 +111,7 @@
                 </configuration>
             </plugin>
 
-            <!-- WildFly plugin -->
+            <!-- WildFly plugin (unchanged) -->
             <plugin>
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
@@ -127,6 +128,7 @@
                 <version>1.15.0</version>
                 <configuration>
                     <nodeVersion>${node.version}</nodeVersion>
+                    <!-- Where Node will be installed -->
                     <installDirectory>${project.basedir}</installDirectory>
                 </configuration>
                 <executions>
@@ -170,4 +172,6 @@
 
         <finalName>${artifactId}</finalName>
     </build>
+
+    <!-- Old account2 profile removed; v26 account UI is handled by the main build now. -->
 </project>
