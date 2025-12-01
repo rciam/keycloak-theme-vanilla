@@ -45,12 +45,11 @@
                 $http({method: 'GET', url: baseUri + '/realms/' + realm + '/theme-info/identity-providers', params : $scope.fetchParams })
                     .then(
                         function(success) {
-                            if(success.data != null && Array.isArray(success.data.identityProviders)){
-                                success.data.identityProviders.forEach(function(idp) {
+                            if(success.data != null && Array.isArray(success.data)){
+                                success.data.forEach(function(idp) {
                                     setLoginUrl(idp);
                                     $scope.idps.push(idp);
                                 });
-                                $scope.hiddenIdps = success.data.hiddenIdps;
                             }
                             else {
                                 $scope.reachedEndPage = true;
@@ -107,7 +106,6 @@
                 function handleChange(newValue, oldValue) {
                   if (newValue !== oldValue) {
                     $scope.idps = [];
-                    $scope.hiddenIdps = 0;
                     $scope.fetchParams.first = 0;
                     $scope.totalIdpsAskedFor = 0;
                     $scope.reachedEndPage = false;

@@ -14,7 +14,7 @@
         <account.ui.dir>src/main/resources/theme/rciam/account</account.ui.dir>
 
         <maven.compiler.release>21</maven.compiler.release>
-        <keycloak.version>26.4.4</keycloak.version>
+        <keycloak.version>26.4.6</keycloak.version>
         <infinispan.version>15.0.19.Final</infinispan.version>
         <node.version>v20.18.0</node.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

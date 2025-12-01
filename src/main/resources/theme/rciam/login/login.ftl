@@ -46,7 +46,6 @@
             $scope.maxIdPsWithoutSearch = 1;
             $scope.fetchParams = { 'keyword': null, 'first' : 0, 'max': 20, 'client_id': sessionParams.get('client_id'), 'tab_id': sessionParams.get('tab_id'), 'session_code': sessionParams.get('session_code')};
             $scope.idps = [];
-            $scope.hiddenIdps = 0;
             $scope.totalIdpsAskedFor = 0;
             $scope.reachedEndPage = false;
             $scope.latestSearch = {};  //for sync purposes
@@ -69,12 +68,11 @@
                                 return;
                             }
                             $scope.isSearching = false;
-                            if(success.data != null && Array.isArray(success.data.identityProviders)){
-                                success.data.identityProviders.forEach(function(idp) {
+                            if(success.data != null && Array.isArray(success.data)){
+                                success.data.forEach(function(idp) {
                                     setLoginUrl(idp);
                                     $scope.idps.push(idp);
                                 });
-                                $scope.hiddenIdps = success.data.hiddenIdps;
                             }
                             else {
                                 $scope.reachedEndPage = true;
@@ -132,7 +130,6 @@
                 function handleChange(newValue, oldValue) {
                   if (newValue !== oldValue) {
                     $scope.idps = [];
-                    $scope.hiddenIdps = 0;
                     $scope.fetchParams.first = 0;
                     $scope.totalIdpsAskedFor = 0;
                     $scope.reachedEndPage = false;
