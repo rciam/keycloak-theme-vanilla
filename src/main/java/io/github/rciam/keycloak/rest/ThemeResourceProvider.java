@@ -17,29 +17,38 @@
 
 package io.github.rciam.keycloak.rest;
 
+import io.github.rciam.keycloak.cookie.RciamCookieProvider;
 import io.github.rciam.keycloak.resolver.Resources;
 import io.github.rciam.keycloak.resolver.TermsOfUse;
 import io.github.rciam.keycloak.resolver.ThemeConfig;
 import io.github.rciam.keycloak.resolver.stubs.Configuration;
 import io.github.rciam.keycloak.resolver.stubs.cache.CacheKey;
-import io.github.rciam.keycloak.resolver.stubs.rest.IdpPageResult;
+import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.logging.Logger;
+import org.keycloak.authentication.AuthenticationProcessor;
+import org.keycloak.authentication.authenticators.broker.AbstractIdpAuthenticator;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.common.ClientConnection;
-import org.keycloak.forms.login.freemarker.model.IdentityProviderBean;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.jose.jws.JWSInputException;
 import org.keycloak.models.ClientModel;
 import org.keycloak.models.IdentityProviderModel;
+import org.keycloak.models.IdentityProviderStorageProvider;
 import org.keycloak.models.KeycloakSession;
+import org.keycloak.models.OrderedModel;
 import org.keycloak.models.RealmModel;
+import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.representations.AccessToken;
+import org.keycloak.services.Urls;
 import org.keycloak.services.managers.AppAuthManager;
 import org.keycloak.services.managers.AuthenticationManager;
 import org.keycloak.services.managers.AuthenticationSessionManager;
 import org.keycloak.services.managers.RealmManager;
 import org.keycloak.services.resource.RealmResourceProvider;
+import org.keycloak.services.resources.LoginActionsService;
 import org.keycloak.services.resources.admin.AdminAuth;
+import org.keycloak.services.resources.admin.fgap.AdminPermissionEvaluator;
+import org.keycloak.services.resources.admin.fgap.AdminPermissions;
 import org.keycloak.sessions.AuthenticationSessionModel;
 
 import jakarta.ws.rs.BadRequestException;
@@ -57,11 +66,10 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.keycloak.theme.Theme;
 import org.keycloak.util.JsonSerialization;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -71,7 +79,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
+import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -80,6 +88,9 @@ public class ThemeResourceProvider implements RealmResourceProvider {
 
     private static final Logger logger = Logger.getLogger(ThemeResourceProvider.class);
     private static final String KEYCLOAK_REMEMBER_IDPS = "KEYCLOAK_REMEMBER_IDPS_";
+    private static final String ICON_THEME_PREFIX = "kcLogoIdP-";
+    private static final String IDP_THEME_CONFIG_PREFIX = "kcTheme-";
+    private static final String ALIAS_IN = "aliasIn";
 
     @Context
     protected ClientConnection clientConnection;
@@ -163,9 +174,7 @@ public class ThemeResourceProvider implements RealmResourceProvider {
             return Response.status(404).entity("Could not find the resource "+filename).build();
 
         return Response.ok()
-//                .header("Content-Type", MediaType.IMAGE_JPEG_VALUE)
                 .header("Content-Disposition","attachment; filename=\"" + filename + "\"")
-//                .header("Content-Length", data.length)
                 .entity(data)
                 .build();
     }
@@ -208,89 +217,110 @@ public class ThemeResourceProvider implements RealmResourceProvider {
      * This should be used from login pages to show all available identity providers of the realm for logging in.
      * It has to be a public endpoint.
      */
-//    @GET
-//    @Path("/identity-providers")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public IdpPageResult getIdentityProviders(
-//            @QueryParam("keyword") @DefaultValue("") String keyword,
-//            @QueryParam("first") @DefaultValue("0") Integer firstResult,
-//            @QueryParam("max") @DefaultValue("2147483647") Integer maxResults,
-//            @QueryParam("client_id") @DefaultValue("") String clientId,
-//            @QueryParam("tab_id") @DefaultValue("") String tabId,
-//            @QueryParam("session_code") @DefaultValue("") String sessionCode
-//    ) {
-//        if(firstResult < 0 || maxResults < 0)
-//            throw new BadRequestException("Should specify params firstResult and maxResults to be >= 0");
-//        RealmModel realm = session.getContext().getRealm();
-//
-//        final String lowercaseKeyword = toLowerCaseWithoutAccents(keyword);
-//        List<IdentityProviderModel> identityProviders = realm.getIdentityProvidersStream()
-//                .filter(idp -> toLowerCaseWithoutAccents(idp.getDisplayName()).contains(lowercaseKeyword) || idp.getAlias().toLowerCase().contains(lowercaseKeyword))
-//                .skip(firstResult)
-//                .limit(maxResults)
-//                .collect(Collectors.toList());
-//
-//        int firstResultSize = identityProviders.size();
-//
-//        //this translates to http 204 code (instead of an empty list's 200). Is used to specify that its a end-of-stream.
-//        if(identityProviders.isEmpty())
-//            return null;
-//
-//        AuthenticationSessionManager authSessionManager = new AuthenticationSessionManager(session);
-//        AuthenticationSessionModel authSessionModel = authSessionManager.getCurrentAuthenticationSession(realm, realm.getClientByClientId(clientId), tabId);
-//        identityProviders = filterIdentityProviders(identityProviders.stream(), session, authSessionModel);
-//
-//        //Expose through the Bean, because it makes some extra processing. URI is re-composed back in the UI, so we can ignore here
-//        //returns empty list if all idps are filtered out, and not null. This is important for the UI
-//        IdentityProviderBean idpBean = new IdentityProviderBean(realm, session, identityProviders, URI.create(""));
-//        return idpBean.getProviders() != null ?
-//                new IdpPageResult(idpBean.getProviders(), firstResultSize - idpBean.getProviders().size()) :
-//                new IdpPageResult(new ArrayList<>(), firstResultSize);
-//    }
+    @GET
+    @Path("/identity-providers")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<RciamIdentityProvider> getIdentityProviders(
+            @QueryParam("keyword") @DefaultValue("") String keyword,
+            @QueryParam("first") @DefaultValue("0") Integer firstResult,
+            @QueryParam("max") @DefaultValue("2147483647") Integer maxResults,
+            @QueryParam("client_id") @DefaultValue("") String clientId,
+            @QueryParam("tab_id") @DefaultValue("") String tabId,
+            @QueryParam("session_code") @DefaultValue("") String sessionCode
+    ) {
+        if (firstResult < 0 || maxResults < 0)
+            throw new BadRequestException("Should specify params firstResult and maxResults to be >= 0");
+        RealmModel realm = session.getContext().getRealm();
 
-    private String toLowerCaseWithoutAccents(String text){
-        if ( text ==null )
-                return "";
-        String finalStr = Normalizer.normalize(text.toLowerCase(), Normalizer.Form.NFD);
-        return Pattern.compile("\\p{InCombiningDiacriticalMarks}+").matcher(finalStr).replaceAll("");
+        //login options together with searching alias or display name
+        Map<String, String> searchOptions = IdentityProviderStorageProvider.LoginFilter.getLoginSearchOptions();
+        searchOptions.put(IdentityProviderModel.SEARCH, "*" + keyword + "*");
+        AuthenticationSessionManager authSessionManager = new AuthenticationSessionManager(session);
+        searchOptions.put(IdentityProviderModel.ALIAS_NOT_IN, getExistingIDP(session, authSessionManager.getCurrentAuthenticationSession(realm, realm.getClientByClientId(clientId), tabId)));
+
+        //Expose through the Bean, because it makes some extra processing. URI is re-composed back in the UI, so we can ignore
+        URI uri = UriBuilder.fromUri(session.getContext().getUri().getBaseUri().getPath()).build();
+        return session.identityProviders().getAllStream(searchOptions, firstResult, maxResults).map(idp -> createIdentityProvider(realm, uri, idp)).toList();
+    }
+
+    //similar to the method of IdentityProviderBean - no cjheck with user
+    private String getExistingIDP(KeycloakSession session, AuthenticationSessionModel authSession) {
+
+        String existingIDPAlias = null;
+        if (authSession != null && Objects.equals(LoginActionsService.FIRST_BROKER_LOGIN_PATH, authSession.getAuthNote(AuthenticationProcessor.CURRENT_FLOW_PATH))) {
+            SerializedBrokeredIdentityContext serializedCtx = SerializedBrokeredIdentityContext.readFromAuthenticationSession(authSession, AbstractIdpAuthenticator.BROKERED_CONTEXT_NOTE);
+            final IdentityProviderModel existingIdp = (serializedCtx == null) ? null : serializedCtx.deserialize(session, authSession).getIdpConfig();
+            if (existingIdp != null) {
+                existingIDPAlias = existingIdp.getAlias();
+            }
+
+        }
+        return existingIDPAlias;
     }
 
     /**
      * This should be used from login pages to show any promoted identity providers of the realm for logging in with.
      * It has to be a public endpoint.
      */
-//    @GET
-//    @Path("/identity-providers-promoted")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public PromotedBean getPromotedIdentityProviders() {
-//        RealmModel realm = session.getContext().getRealm();
-//        List<IdentityProviderModel> promotedProviders = new ArrayList<>();
-//        realm.getIdentityProvidersStream().forEach(idp -> {
-//            if(idp.getConfig()!=null && "true".equals(idp.getConfig().get("promotedLoginbutton")))
-//                promotedProviders.add(idp);
-//        });
-//
-//        List<IdentityProviderBean.IdentityProvider> lastLoginIdPs = new ArrayList<>();
-//        Set<String> cookieValues = CookieHelper.getCookieValue(session, KEYCLOAK_REMEMBER_IDPS+ realm.getId());
-//        if (!cookieValues.isEmpty()) {
-//            try {
-//                List<String> lastLoginIdPAlias = JsonSerialization.readValue(URLDecoder.decode(cookieValues.iterator().next(), StandardCharsets.UTF_8), List.class);
-//                IdentityProviderBean lastLoginIdPBean = new IdentityProviderBean(realm, session, lastLoginIdPAlias.stream().map(realm::getIdentityProviderByAlias).filter(Objects::nonNull).collect(Collectors.toList()), URI.create(""));
-//                if (lastLoginIdPBean.getProviders() != null) {
-//                    lastLoginIdPs.addAll(lastLoginIdPBean.getProviders());
-//                    //remove last login IdPs from promoted
-//                    promotedProviders.removeIf(idp -> lastLoginIdPAlias.contains(idp.getAlias()));
-//                }
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//
-//        //Expose through the Bean, because it makes some extra processing. URI is re-composed back in the UI, so we can ignore here
-//        IdentityProviderBean idpBean = new IdentityProviderBean(realm, session, promotedProviders, URI.create(""));
-//        return new PromotedBean(idpBean.getProviders()!=null ? idpBean.getProviders() : new ArrayList<>(), lastLoginIdPs);
-//
-//    }
+    @GET
+    @Path("/identity-providers-promoted")
+    @Produces(MediaType.APPLICATION_JSON)
+    public PromotedBean getPromotedIdentityProviders() {
+        RealmModel realm = session.getContext().getRealm();
+        URI uri = UriBuilder.fromUri(session.getContext().getUri().getBaseUri().getPath()).build();
+        List<RciamIdentityProvider> promotedProviders = session.identityProviders().getAllStream(Map.of("promotedLoginbutton", "true"), null, null).map(idp -> createIdentityProvider(realm,uri,idp)).collect(Collectors.toList());
+
+        List<RciamIdentityProvider> lastLoginIdPs = new ArrayList<>();
+        String idpsCookie = session.getProvider(RciamCookieProvider.class).get(KEYCLOAK_REMEMBER_IDPS + realm.getId());
+        if (!idpsCookie.isEmpty()) {
+            try {
+                List<String> lastLoginIdPAlias = JsonSerialization.readValue(URLDecoder.decode(idpsCookie, StandardCharsets.UTF_8), List.class);
+                lastLoginIdPs = session.identityProviders().getAllStream(Map.of(ALIAS_IN, lastLoginIdPAlias.stream().collect(Collectors.joining(","))), null, null).map(idp -> createIdentityProvider(realm,uri,idp)).collect(Collectors.toList());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return new PromotedBean(promotedProviders, lastLoginIdPs);
+
+    }
+
+    //needed private methods of IdentityProviderBean
+    private RciamIdentityProvider createIdentityProvider(RealmModel realm, URI baseURI, IdentityProviderModel identityProvider) {
+        String loginUrl = Urls.identityProviderAuthnRequest(baseURI, identityProvider.getAlias(), realm.getName()).toString();
+        String displayName = KeycloakModelUtils.getIdentityProviderDisplayName(session, identityProvider);
+        Map<String, String> themeConfig = identityProvider.getConfig().entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith(IDP_THEME_CONFIG_PREFIX))
+                .collect(Collectors.toMap(
+                        entry -> entry.getKey().substring(IDP_THEME_CONFIG_PREFIX.length()),
+                        Map.Entry::getValue
+                ));
+        return new RciamIdentityProvider(identityProvider.getAlias(),
+                displayName, identityProvider.getProviderId(), loginUrl,
+                identityProvider.getConfig().get("guiOrder"), getLoginIconClasses(identityProvider), themeConfig, identityProvider.getConfig().get("logoUri"));
+    }
+
+    private String getLoginIconClasses(IdentityProviderModel identityProvider) {
+        try {
+            Theme theme = session.theme().getTheme(Theme.Type.LOGIN);
+            Optional<String> classesFromTheme = Optional.ofNullable(getLogoIconClass(identityProvider, theme.getProperties()));
+            Optional<String> classesFromModel = Optional.ofNullable(identityProvider.getDisplayIconClasses());
+            return classesFromTheme.orElse(classesFromModel.orElse(""));
+        } catch (IOException e) {
+            //NOP
+        }
+        return "";
+    }
+
+    private String getLogoIconClass(IdentityProviderModel identityProvider, Properties themeProperties) throws IOException {
+        String iconClass = themeProperties.getProperty(ICON_THEME_PREFIX + identityProvider.getAlias());
+
+        if (iconClass == null) {
+            return themeProperties.getProperty(ICON_THEME_PREFIX + identityProvider.getProviderId());
+        }
+
+        return iconClass;
+    }
 
 
     /**
@@ -315,10 +345,9 @@ public class ThemeResourceProvider implements RealmResourceProvider {
 
 
     private boolean isRealmManager(HttpHeaders headers){
-//        AdminAuth adminAuth = authenticateRealmAdminRequest(headers);
-//        AdminPermissionEvaluator realmAuth = AdminPermissions.evaluator(session, session.getContext().getRealm(), adminAuth);
-//        return realmAuth.realm().canManageRealm();
-        return true;
+        AdminAuth adminAuth = authenticateRealmAdminRequest(headers);
+        AdminPermissionEvaluator realmAuth = AdminPermissions.evaluator(session, session.getContext().getRealm(), adminAuth);
+        return realmAuth.realm().canManageRealm();
     }
 
     /**
@@ -367,37 +396,90 @@ public class ThemeResourceProvider implements RealmResourceProvider {
 
     private class PromotedBean {
         public PromotedBean(){}
-        public PromotedBean(List<IdentityProviderBean.IdentityProvider> promotedIdPs, List<IdentityProviderBean.IdentityProvider> lastLoginIdPs ){
+        public PromotedBean(List<RciamIdentityProvider> promotedIdPs, List<RciamIdentityProvider> lastLoginIdPs ){
             this.promotedIdPs = promotedIdPs;
             this.lastLoginIdPs = lastLoginIdPs;
         }
-        private List<IdentityProviderBean.IdentityProvider> promotedIdPs;
-        private List<IdentityProviderBean.IdentityProvider> lastLoginIdPs;
+        private List<RciamIdentityProvider> promotedIdPs;
+        private List<RciamIdentityProvider> lastLoginIdPs;
 
-        public List<IdentityProviderBean.IdentityProvider> getPromotedIdPs() {
+        public List<RciamIdentityProvider> getPromotedIdPs() {
             return promotedIdPs;
         }
 
-        public void setPromotedIdPs(List<IdentityProviderBean.IdentityProvider> promotedIdPs) {
+        public void setPromotedIdPs(List<RciamIdentityProvider> promotedIdPs) {
             this.promotedIdPs = promotedIdPs;
         }
 
-        public List<IdentityProviderBean.IdentityProvider> getLastLoginIdPs() {
+        public List<RciamIdentityProvider> getLastLoginIdPs() {
             return lastLoginIdPs;
         }
 
-        public void setLastLoginIdPs(List<IdentityProviderBean.IdentityProvider> lastLoginIdPs) {
+        public void setLastLoginIdPs(List<RciamIdentityProvider> lastLoginIdPs) {
             this.lastLoginIdPs = lastLoginIdPs;
         }
+
     }
 
+    //based on IdentityProviderBean.IdentityProvider with adding logoUri
+    public class RciamIdentityProvider implements OrderedModel {
 
-//    private static AdminAuth authenticateRealmAdminRequest(HttpHeaders headers, AdminRoot adminRoot) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-//        ResteasyProviderFactory.getInstance().injectProperties(adminRoot);
-//        Method method = adminRoot.getClass().getDeclaredMethod("authenticateRealmAdminRequest", HttpHeaders.class);
-//        method.setAccessible(true);
-//        Object adminAuth = method.invoke(adminRoot, headers);
-//        return (AdminAuth)adminAuth;
-//    }
+        private final String alias;
+        private final String providerId; // This refers to providerType (facebook, google, etc.)
+        private final String loginUrl;
+        private final String guiOrder;
+        private final String displayName;
+        private final String iconClasses;
+        private final Map<String, String> themeConfig;
+        private final String logoUri;
+
+        public RciamIdentityProvider(String alias, String displayName, String providerId, String loginUrl, String guiOrder) {
+            this(alias, displayName, providerId, loginUrl, guiOrder, "", null, null);
+        }
+
+        public RciamIdentityProvider(String alias, String displayName, String providerId, String loginUrl, String guiOrder, String iconClasses, Map<String, String> themeConfig, String logoUri) {
+            this.alias = alias;
+            this.displayName = displayName;
+            this.providerId = providerId;
+            this.loginUrl = loginUrl;
+            this.guiOrder = guiOrder;
+            this.iconClasses = iconClasses;
+            this.themeConfig = themeConfig;
+            this.logoUri = logoUri;
+        }
+
+        public String getAlias() {
+            return alias;
+        }
+
+        public String getLoginUrl() {
+            return loginUrl;
+        }
+
+        public String getProviderId() {
+            return providerId;
+        }
+
+        @Override
+        public String getGuiOrder() {
+            return guiOrder;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public String getIconClasses() {
+            return iconClasses;
+        }
+
+        public Map<String, String> getThemeConfig() {
+            return themeConfig;
+        }
+
+        public String getLogoUri() {
+            return logoUri;
+        }
+    }
 
 }

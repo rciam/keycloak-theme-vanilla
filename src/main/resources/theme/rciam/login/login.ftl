@@ -46,7 +46,6 @@
             $scope.maxIdPsWithoutSearch = 1;
             $scope.fetchParams = { 'keyword': null, 'first' : 0, 'max': 20, 'client_id': sessionParams.get('client_id'), 'tab_id': sessionParams.get('tab_id'), 'session_code': sessionParams.get('session_code')};
             $scope.idps = [];
-            $scope.hiddenIdps = 0;
             $scope.totalIdpsAskedFor = 0;
             $scope.reachedEndPage = false;
             $scope.latestSearch = {};  //for sync purposes
@@ -69,12 +68,11 @@
                                 return;
                             }
                             $scope.isSearching = false;
-                            if(success.data != null && Array.isArray(success.data.identityProviders)){
-                                success.data.identityProviders.forEach(function(idp) {
+                            if(success.data != null && Array.isArray(success.data)){
+                                success.data.forEach(function(idp) {
                                     setLoginUrl(idp);
                                     $scope.idps.push(idp);
                                 });
-                                $scope.hiddenIdps = success.data.hiddenIdps;
                             }
                             else {
                                 $scope.reachedEndPage = true;
@@ -132,7 +130,6 @@
                 function handleChange(newValue, oldValue) {
                   if (newValue !== oldValue) {
                     $scope.idps = [];
-                    $scope.hiddenIdps = 0;
                     $scope.fetchParams.first = 0;
                     $scope.totalIdpsAskedFor = 0;
                     $scope.reachedEndPage = false;
@@ -188,67 +185,6 @@
         ${msg("loginAccountTitle")}
     <#elseif section = "form">
     <div id="kc-form">
-<#--
-      <div id="kc-form-wrapper">
-        <#if realm.password>
-            <form id="kc-form-login" onsubmit="login.disabled = true; return true;" action="${url.loginAction}" method="post">
-                <div class="${properties.kcFormGroupClass!}">
-                    <label for="username" class="${properties.kcLabelClass!}"><#if !realm.loginWithEmailAllowed>${msg("username")}<#elseif !realm.registrationEmailAsUsername>${msg("usernameOrEmail")}<#else>${msg("email")}</#if></label>
-
-                    <#if usernameEditDisabled??>
-                        <input tabindex="1" id="username" class="${properties.kcInputClass!}" name="username" value="${(login.username!'')}" type="text" disabled />
-                    <#else>
-                        <input tabindex="1" id="username" class="${properties.kcInputClass!}" name="username" value="${(login.username!'')}"  type="text" autofocus autocomplete="off"
-                               aria-invalid="<#if messagesPerField.existsError('username','password')>true</#if>"
-                        />
-
-                        <#if messagesPerField.existsError('username','password')>
-                            <span id="input-error" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
-                                    ${kcSanitize(messagesPerField.getFirstError('username','password'))?no_esc}
-                            </span>
-                        </#if>
-                    </#if>
-                </div>
-
-                <div class="${properties.kcFormGroupClass!}">
-                    <label for="password" class="${properties.kcLabelClass!}">${msg("password")}</label>
-
-                    <input tabindex="2" id="password" class="${properties.kcInputClass!}" name="password" type="password" autocomplete="off"
-                           aria-invalid="<#if messagesPerField.existsError('username','password')>true</#if>"
-                    />
-                </div>
-
-                <div class="${properties.kcFormGroupClass!} ${properties.kcFormSettingClass!}">
-                    <div id="kc-form-options">
-                        <#if realm.rememberMe && !usernameEditDisabled??>
-                            <div class="checkbox">
-                                <label>
-                                    <#if login.rememberMe??>
-                                        <input tabindex="3" id="rememberMe" name="rememberMe" type="checkbox" checked> ${msg("rememberMe")}
-                                    <#else>
-                                        <input tabindex="3" id="rememberMe" name="rememberMe" type="checkbox"> ${msg("rememberMe")}
-                                    </#if>
-                                </label>
-                            </div>
-                        </#if>
-                        </div>
-                        <div class="${properties.kcFormOptionsWrapperClass!}">
-                            <#if realm.resetPasswordAllowed>
-                                <span><a tabindex="5" href="${url.loginResetCredentialsUrl}">${msg("doForgotPassword")}</a></span>
-                            </#if>
-                        </div>
-
-                  </div>
-
-                  <div id="kc-form-buttons" class="${properties.kcFormGroupClass!}">
-                      <input type="hidden" id="id-hidden-input" name="credentialId" <#if auth.selectedCredential?has_content>value="${auth.selectedCredential}"</#if>/>
-                      <input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="login" id="kc-login" type="submit" value="${msg("doLogIn")}"/>
-                  </div>
-            </form>
-        </#if>
-      </div>
--->
-
 
       <div ng-app="angularLoginPart" ng-controller="idpListing">
 
