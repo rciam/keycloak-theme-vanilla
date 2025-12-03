@@ -68,6 +68,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.keycloak.theme.Theme;
 import org.keycloak.util.JsonSerialization;
+import org.keycloak.utils.StringUtil;
 
 import java.io.IOException;
 import java.net.URI;
@@ -272,7 +273,7 @@ public class ThemeResourceProvider implements RealmResourceProvider {
 
         List<RciamIdentityProvider> lastLoginIdPs = new ArrayList<>();
         String idpsCookie = session.getProvider(RciamCookieProvider.class).get(KEYCLOAK_REMEMBER_IDPS + realm.getId());
-        if (!idpsCookie.isEmpty()) {
+        if (StringUtil.isNotBlank(idpsCookie)) {
             try {
                 List<String> lastLoginIdPAlias = JsonSerialization.readValue(URLDecoder.decode(idpsCookie, StandardCharsets.UTF_8), List.class);
                 lastLoginIdPs = session.identityProviders().getAllStream(Map.of(ALIAS_IN, lastLoginIdPAlias.stream().collect(Collectors.joining(","))), null, null).map(idp -> createIdentityProvider(realm,uri,idp)).collect(Collectors.toList());
