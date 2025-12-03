@@ -26,7 +26,6 @@ src/main/resources/theme/rciam/account/group-widgets
 src/main/resources/theme/rciam/account/resources/group-widgets
 src/main/resources/theme/rciam/account/resources/groups-mngnt-service
 src/main/resources/theme/rciam/account/resources/widgets
-src/main/resources/theme/rciam/account/resources/js
 src/main/resources/theme/rciam/account/node_modules
 src/main/resources/theme/rciam/account/dist
 src/main/resources/theme/rciam/account/package-lock.json

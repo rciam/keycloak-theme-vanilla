@@ -1,0 +1,46 @@
+/* resources/css/footer.css */
+
+.rciam-footer {
+  width: 60%;
+  margin: 30px auto 5px;
+  padding: 10px;
+  text-align: center;
+}
+
+.rciam-footer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.rciam-footer-support,
+.rciam-footer-logos,
+.rciam-footer-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.horizontal-padding-10 {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.rciam-footer-text-wrapper {
+  margin-top: 7px;
+}
+
+.corner-ribbon {
+  width: 200px;
+  background: #e43;
+  position: fixed;
+  top: 25px;
+  left: -50px;
+  text-align: center;
+  line-height: 40px;
+  letter-spacing: 1px;
+  color: #f0f0f0;
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+  z-index: 1000;
+}
