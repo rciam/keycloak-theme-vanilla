@@ -1,5 +1,5 @@
 <#macro termsAcceptance>
-    <#if termsAcceptanceRequired?? && termsAcceptanceRequired>
+   <#if termsAcceptanceRequired!false>
         <div class="form-group">
             <div class="${properties.kcLabelWrapperClass!}">
                 <input type="checkbox" id="termsAccepted" name="termsAccepted" class="${properties.kcCheckboxInputClass!}"
