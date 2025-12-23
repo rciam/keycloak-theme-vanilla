@@ -93,7 +93,6 @@ public class ThemeResourceProvider implements RealmResourceProvider {
     private static final String IDP_THEME_CONFIG_PREFIX = "kcTheme-";
     private static final String ALIAS_IN = "aliasIn";
 
-    @Context
     protected ClientConnection clientConnection;
 
     private KeycloakSession session;
