@@ -23,12 +23,14 @@ import io.github.rciam.keycloak.resolver.TermsOfUse;
 import io.github.rciam.keycloak.resolver.ThemeConfig;
 import io.github.rciam.keycloak.resolver.stubs.Configuration;
 import io.github.rciam.keycloak.resolver.stubs.cache.CacheKey;
+import jakarta.ws.rs.core.MultivaluedMap;
 import jakarta.ws.rs.core.UriBuilder;
 import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationProcessor;
 import org.keycloak.authentication.authenticators.broker.AbstractIdpAuthenticator;
 import org.keycloak.authentication.authenticators.broker.util.SerializedBrokeredIdentityContext;
 import org.keycloak.common.ClientConnection;
+import org.keycloak.http.FormPartValue;
 import org.keycloak.jose.jws.JWSInput;
 import org.keycloak.jose.jws.JWSInputException;
 import org.keycloak.models.ClientModel;
@@ -70,7 +72,9 @@ import org.keycloak.theme.Theme;
 import org.keycloak.util.JsonSerialization;
 import org.keycloak.utils.StringUtil;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -179,38 +183,32 @@ public class ThemeResourceProvider implements RealmResourceProvider {
                 .build();
     }
 
-//    @POST
-//    @Path("/resource/{filename}")
-//    @Consumes(MediaType.MULTIPART_FORM_DATA)
-//    public Response setResource(@Context final HttpHeaders headers, @PathParam("filename") String filename, MultipartFormDataInput input) {
-//        if(!isRealmManager(headers))
-//            return Response.status(401).build();
-//        RealmModel realm = session.getContext().getRealm();
-//        Map<String, List<InputPart>> uploadForm = input.getFormDataMap();
-//        if(uploadForm.size() == 0)
-//            return Response.status(400).entity("Should have one file uploaded. Please attach the file content in the multimap for the file "+ filename).build();
-//        if(uploadForm.size() > 1)
-//            return Response.status(400).entity("Should have ONLY ONE file uploaded at a time. Please attach a file in the multimap for the file "+filename).build();
-//
-//        Map.Entry<String, List<InputPart>> fileEntry = uploadForm.entrySet().stream().findFirst().get();
-//
-//        for (InputPart inputPart : fileEntry.getValue()) {
-//
-//            try {
-//                InputStream inputStream = inputPart.getBody(InputStream.class, null);
-//
-//                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-//                int temp;
-//                byte[] buffer = new byte[1000];
-//                while ((temp = inputStream.read(buffer)) != -1)
-//                    byteArrayOutputStream.write(buffer, 0, temp);
-//                resources.saveFilesystemResource(realm.getName(), filename, byteArrayOutputStream.toByteArray());
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        return Response.status(201).build();
-//    }
+    @POST
+    @Path("/resource/{filename}")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    public Response setResource(@Context final HttpHeaders headers, @PathParam("filename") String filename) {
+        if(!isRealmManager(headers))
+            return Response.status(401).build();
+        RealmModel realm = session.getContext().getRealm();
+        MultivaluedMap<String, FormPartValue> formDataMap = session.getContext().getHttpRequest().getMultiPartFormParameters();
+        if (!formDataMap.containsKey("file")) {
+            return Response.status(400).entity("Should have one file uploaded. Please attach the file content in the multimap for the file "+ filename).build();
+        }
+        InputStream inputStream = formDataMap.getFirst("file").asInputStream();
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            int temp;
+            byte[] buffer = new byte[1000];
+            while ((temp = inputStream.read(buffer)) != -1)
+                byteArrayOutputStream.write(buffer, 0, temp);
+            resources.saveFilesystemResource(realm.getName(), filename, byteArrayOutputStream.toByteArray());
+        } catch (IOException e) {
+            logger.errorf(e, "Problem uploading file with name %s", filename);
+            return Response.status(Response.Status.BAD_REQUEST).entity("Problem uploading file with name "+ filename).build();
+        }
+
+        return Response.status(201).build();
+    }
 
 
     /**
