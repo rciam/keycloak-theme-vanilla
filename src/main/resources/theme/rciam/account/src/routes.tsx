@@ -2,35 +2,59 @@ import type { IndexRouteObject, RouteObject } from "react-router-dom";
 import App from "./App";
 import { environment } from "./environment";
 import {
-  Applications,
   DeviceActivity,
-  Groups,
-  LinkedAccounts,
   Oid4Vci,
   Resources,
-  ContentComponent,
-  SigningIn,
-  PersonalInfo
+  PersonalInfo,
+  Groups,
 } from "@keycloak/keycloak-account-ui";
+import { LinkedAccounts } from "./account-security/LinkedAccounts";
+import { Applications } from "./applications/Applications";
+import { SigningIn } from "./signing-in/SigningIn";
+// We can define a small extension type for convenience
+export type NavRouteObject = RouteObject & {
+  handle?: {
+    navGroupId?: string; // which sidebar group this route belongs to
+    navGroupLabelKey?: string; // optional custom i18n key for the group
+    navItemLabelKey?: string; // optional custom i18n key for this item
+    hideFromNav?: boolean; // optional: don't show in sidebar at all
+  };
+};
 
-export const DeviceActivityRoute: RouteObject = {
+export const DeviceActivityRoute: NavRouteObject = {
   path: "account-security/device-activity",
   element: <DeviceActivity />,
 };
 
-export const LinkedAccountsRoute: RouteObject = {
+export const LinkedAccountsRoute: NavRouteObject = {
   path: "account-security/linked-accounts",
   element: <LinkedAccounts />,
 };
 
-export const SigningInRoute: RouteObject = {
+export const SigningInRoute: NavRouteObject = {
   path: "account-security/signing-in",
   element: <SigningIn />,
 };
 
-export const ApplicationsRoute: RouteObject = {
+export const ApplicationsRoute: NavRouteObject = {
   path: "applications",
   element: <Applications />,
+};
+
+export const ResourcesRoute: NavRouteObject = {
+  path: "resources",
+  element: <Resources />,
+};
+
+export const PersonalInfoRoute: IndexRouteObject & NavRouteObject = {
+  index: true,
+  element: <PersonalInfo />,
+  path: "",
+};
+
+export const Oid4VciRoute: NavRouteObject = {
+  path: "oid4vci",
+  element: <Oid4Vci />,
 };
 
 export const GroupsRoute: RouteObject = {
@@ -38,32 +62,7 @@ export const GroupsRoute: RouteObject = {
   element: <Groups />,
 };
 
-export const ResourcesRoute: RouteObject = {
-  path: "resources",
-  element: <Resources />,
-};
-
-export type ContentComponentParams = {
-  componentId: string;
-};
-
-export const ContentRoute: RouteObject = {
-  path: "content/:componentId",
-  element: <ContentComponent />,
-};
-
-export const PersonalInfoRoute: IndexRouteObject = {
-  index: true,
-  element: <PersonalInfo />,
-  path: "",
-};
-
-export const Oid4VciRoute: RouteObject = {
-  path: "oid4vci",
-  element: <Oid4Vci />,
-};
-
-export const RootRoute: RouteObject = {
+export const RootRoute: NavRouteObject = {
   path: decodeURIComponent(new URL(environment.baseUrl).pathname),
   element: <App />,
   errorElement: <>Error</>,
@@ -73,12 +72,10 @@ export const RootRoute: RouteObject = {
     LinkedAccountsRoute,
     SigningInRoute,
     ApplicationsRoute,
-    GroupsRoute,
-    PersonalInfoRoute,
     ResourcesRoute,
-    ContentRoute,
+    GroupsRoute,
     ...(environment.features.isOid4VciEnabled ? [Oid4VciRoute] : []),
   ],
 };
 
-export const routes: RouteObject[] = [RootRoute];
+export const routes: NavRouteObject[] = [RootRoute];
