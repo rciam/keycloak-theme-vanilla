@@ -280,7 +280,12 @@ public class ThemeResourceProvider implements RealmResourceProvider {
             }
         }
 
-        List<RciamIdentityProvider> promotedProviders = session.identityProviders().getAllStream(Map.of("promotedLoginbutton", "true", IdentityProviderModel.ALIAS_NOT_IN, lastLoginIdPAliasStr), null, null).map(idp -> createIdentityProvider(realm,uri,idp)).collect(Collectors.toList());
+        List<RciamIdentityProvider> promotedProviders = new ArrayList<>();
+        if (lastLoginIdPAliasStr != null) {
+            session.identityProviders().getAllStream(Map.of("promotedLoginbutton", "true", IdentityProviderModel.ALIAS_NOT_IN, lastLoginIdPAliasStr), null, null).map(idp -> createIdentityProvider(realm, uri, idp)).collect(Collectors.toList());
+        } else {
+            session.identityProviders().getAllStream(Map.of("promotedLoginbutton", "true"), null, null).map(idp -> createIdentityProvider(realm, uri, idp)).collect(Collectors.toList());
+        }
 
         return new PromotedBean(promotedProviders, lastLoginIdPs);
 
