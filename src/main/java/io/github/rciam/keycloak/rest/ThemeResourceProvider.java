@@ -266,18 +266,21 @@ public class ThemeResourceProvider implements RealmResourceProvider {
     public PromotedBean getPromotedIdentityProviders() {
         RealmModel realm = session.getContext().getRealm();
         URI uri = UriBuilder.fromUri(session.getContext().getUri().getBaseUri().getPath()).build();
-        List<RciamIdentityProvider> promotedProviders = session.identityProviders().getAllStream(Map.of("promotedLoginbutton", "true"), null, null).map(idp -> createIdentityProvider(realm,uri,idp)).collect(Collectors.toList());
 
         List<RciamIdentityProvider> lastLoginIdPs = new ArrayList<>();
         String idpsCookie = session.getProvider(RciamCookieProvider.class).get(KEYCLOAK_REMEMBER_IDPS + realm.getId());
+        String lastLoginIdPAliasStr = null;
         if (StringUtil.isNotBlank(idpsCookie)) {
             try {
                 List<String> lastLoginIdPAlias = JsonSerialization.readValue(URLDecoder.decode(idpsCookie, StandardCharsets.UTF_8), List.class);
-                lastLoginIdPs = session.identityProviders().getAllStream(Map.of(ALIAS_IN, lastLoginIdPAlias.stream().collect(Collectors.joining(","))), null, null).map(idp -> createIdentityProvider(realm,uri,idp)).collect(Collectors.toList());
+                lastLoginIdPAliasStr = lastLoginIdPAlias.stream().collect(Collectors.joining(","));
+                lastLoginIdPs = session.identityProviders().getAllStream(Map.of(ALIAS_IN, lastLoginIdPAliasStr ), null, null).map(idp -> createIdentityProvider(realm,uri,idp)).collect(Collectors.toList());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
+        List<RciamIdentityProvider> promotedProviders = session.identityProviders().getAllStream(Map.of("promotedLoginbutton", "true", IdentityProviderModel.ALIAS_NOT_IN, lastLoginIdPAliasStr), null, null).map(idp -> createIdentityProvider(realm,uri,idp)).collect(Collectors.toList());
 
         return new PromotedBean(promotedProviders, lastLoginIdPs);
 
