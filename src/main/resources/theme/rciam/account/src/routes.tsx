@@ -5,12 +5,12 @@ import {
   DeviceActivity,
   Oid4Vci,
   Resources,
-  PersonalInfo,
   Groups,
 } from "@keycloak/keycloak-account-ui";
 import { LinkedAccounts } from "./account-security/LinkedAccounts";
 import { Applications } from "./applications/Applications";
 import { SigningIn } from "./signing-in/SigningIn";
+import { PersonalInfo } from "./personal-info/PersonalInfo";
 // We can define a small extension type for convenience
 export type NavRouteObject = RouteObject & {
   handle?: {

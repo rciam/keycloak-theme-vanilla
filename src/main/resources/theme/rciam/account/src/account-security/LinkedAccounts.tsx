@@ -68,13 +68,11 @@ export const LinkedAccounts = () => {
       title={t("linkedAccounts")}
       description={t("linkedAccountsIntroMessage")}
     >
-      {JSON.stringify(context.keycloak.resourceAccess)}
       <Stack hasGutter>
         <StackItem>
           <Title headingLevel="h2" className="pf-v5-u-mb-lg" size="xl">
             {t("linkedLoginProviders")}
           </Title>
-
           <LinkedAccountsToolbar
             onFilter={(search) =>
               setParamsLinked({ ...paramsLinked, first: 0, search })
