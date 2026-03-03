@@ -10,7 +10,12 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version. For e
 
 ## [6.0.6] - 2026-03-02
 
+### Fixed
+
+- Help Provider Missing
+
 ### Changed
+
 - Default loginIdpReviewProfileTitle
 
 ## [6.0.5] - 2026-03-02
