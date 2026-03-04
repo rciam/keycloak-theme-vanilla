@@ -1,10 +1,5 @@
 <#macro userProfileFormFields>
 	<#assign currentGroup="">
-		<div class="${properties.kcFormGroupClass!}">
-			<div class="${properties.kcInputWrapperClass!}">
-				${msg("loginProfileDescription")}
-			</div>
-		</div>
 	<#list profile.attributes as attribute>
 		    <#if attribute.name == 'username'>
         <input
@@ -16,7 +11,6 @@
 		<#elseif attribute.name=='locale' && realm.internationalizationEnabled && locale.currentLanguageTag?has_content>
 			<input type="hidden" id="${attribute.name}" name="${attribute.name}" value="${locale.currentLanguageTag}"/>
 		<#else>
-
 			<#assign group = (attribute.group)!"">
 			<#if group != currentGroup>
 				<#assign currentGroup=group>
