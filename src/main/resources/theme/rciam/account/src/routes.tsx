@@ -4,8 +4,7 @@ import { environment } from "./environment";
 import {
   DeviceActivity,
   Oid4Vci,
-  Resources,
-  Groups,
+  Resources
 } from "@keycloak/keycloak-account-ui";
 import { LinkedAccounts } from "./account-security/LinkedAccounts";
 import { Applications } from "./applications/Applications";
@@ -57,11 +56,6 @@ export const Oid4VciRoute: NavRouteObject = {
   element: <Oid4Vci />,
 };
 
-export const GroupsRoute: RouteObject = {
-  path: "groups",
-  element: <Groups />,
-};
-
 export const RootRoute: NavRouteObject = {
   path: decodeURIComponent(new URL(environment.baseUrl).pathname),
   element: <App />,
@@ -73,7 +67,6 @@ export const RootRoute: NavRouteObject = {
     SigningInRoute,
     ApplicationsRoute,
     ResourcesRoute,
-    GroupsRoute,
     ...(environment.features.isOid4VciEnabled ? [Oid4VciRoute] : []),
   ],
 };
