@@ -274,15 +274,21 @@ public class ThemeResourceProvider implements RealmResourceProvider {
             try {
                 List<String> lastLoginIdPAlias = JsonSerialization.readValue(URLDecoder.decode(idpsCookie, StandardCharsets.UTF_8), List.class);
                 lastLoginIdPAliasStr = lastLoginIdPAlias.stream().collect(Collectors.joining(","));
-                lastLoginIdPs = session.identityProviders().getAllStream(Map.of(ALIAS_IN, lastLoginIdPAliasStr ), null, null).map(idp -> createIdentityProvider(realm,uri,idp)).collect(Collectors.toList());
+                Map<String, String> searchOptions = IdentityProviderStorageProvider.LoginFilter.getLoginSearchOptions();
+                searchOptions.put("promotedLoginbutton", "true");
+                searchOptions.put(IdentityProviderModel.ALIAS_IN, lastLoginIdPAliasStr);
+                lastLoginIdPs = session.identityProviders().getAllStream(searchOptions, null, null).map(idp -> createIdentityProvider(realm,uri,idp)).collect(Collectors.toList());
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        List<RciamIdentityProvider> promotedProviders = lastLoginIdPAliasStr != null ?
-                session.identityProviders().getAllStream(Map.of("promotedLoginbutton", "true", IdentityProviderModel.ALIAS_NOT_IN, lastLoginIdPAliasStr), null, null).map(idp -> createIdentityProvider(realm, uri, idp)).collect(Collectors.toList())
-                : session.identityProviders().getAllStream(Map.of("promotedLoginbutton", "true"), null, null).map(idp -> createIdentityProvider(realm, uri, idp)).collect(Collectors.toList());
+        Map<String, String> searchOptionsPromoted = IdentityProviderStorageProvider.LoginFilter.getLoginSearchOptions();
+        searchOptionsPromoted.put("promotedLoginbutton", "true");
+        if (lastLoginIdPAliasStr != null) {
+            searchOptionsPromoted.put(IdentityProviderModel.ALIAS_NOT_IN, lastLoginIdPAliasStr);
+        }
+        List<RciamIdentityProvider> promotedProviders = session.identityProviders().getAllStream(searchOptionsPromoted, null, null).map(idp -> createIdentityProvider(realm, uri, idp)).collect(Collectors.toList());
 
         return new PromotedBean(promotedProviders, lastLoginIdPs);
 
