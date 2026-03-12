@@ -78,14 +78,12 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -276,7 +274,7 @@ public class ThemeResourceProvider implements RealmResourceProvider {
                 lastLoginIdPAliasStr = lastLoginIdPAlias.stream().collect(Collectors.joining(","));
                 Map<String, String> searchOptions = IdentityProviderStorageProvider.LoginFilter.getLoginSearchOptions();
                 searchOptions.put("promotedLoginbutton", "true");
-                searchOptions.put(IdentityProviderModel.ALIAS_IN, lastLoginIdPAliasStr);
+                searchOptions.put("aliasIn", lastLoginIdPAliasStr);
                 lastLoginIdPs = session.identityProviders().getAllStream(searchOptions, null, null).map(idp -> createIdentityProvider(realm,uri,idp)).collect(Collectors.toList());
             } catch (IOException e) {
                 e.printStackTrace();
