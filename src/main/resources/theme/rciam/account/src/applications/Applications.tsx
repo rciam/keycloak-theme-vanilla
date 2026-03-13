@@ -39,6 +39,7 @@ import { AccountEnvironmentExtended } from "../environment";
 type Application = ClientRepresentation & {
   open: boolean;
   country?: string;
+  contacts?: string;
   account?: string;
 };
 
@@ -239,7 +240,16 @@ export const Applications = () => {
                         <DescriptionListDescription>{application.country}</DescriptionListDescription>
                       </DescriptionListGroup>
                     )}
-
+                    {application.contacts && (
+                      <DescriptionListGroup>
+                        <DescriptionListTerm>{t("contacts")}</DescriptionListTerm>
+                        {application.contacts.split(",").map((contact, index) => (
+                          <DescriptionListDescription key={`contact${index}`}>
+                            {contact}
+                          </DescriptionListDescription>
+                        ))}
+                      </DescriptionListGroup> 
+                    )} 
                     {application.logoUri && (
                       <DescriptionListGroup>
                         <DescriptionListTerm>{t("logo")}</DescriptionListTerm>
