@@ -273,7 +273,6 @@ public class ThemeResourceProvider implements RealmResourceProvider {
                 List<String> lastLoginIdPAlias = JsonSerialization.readValue(URLDecoder.decode(idpsCookie, StandardCharsets.UTF_8), List.class);
                 lastLoginIdPAliasStr = lastLoginIdPAlias.stream().collect(Collectors.joining(","));
                 Map<String, String> searchOptions = IdentityProviderStorageProvider.LoginFilter.getLoginSearchOptions();
-                searchOptions.put("promotedLoginbutton", "true");
                 searchOptions.put("aliasIn", lastLoginIdPAliasStr);
                 lastLoginIdPs = session.identityProviders().getAllStream(searchOptions, null, null).map(idp -> createIdentityProvider(realm,uri,idp)).collect(Collectors.toList());
             } catch (IOException e) {
