@@ -1,189 +1,434 @@
 <#import "template.ftl" as layout>
 
 <#-- <script src="${url.resourcesCommonPath}/node_modules/jquery/dist/jquery.min.js" type="text/javascript"></script>  -->
-     <script src="${url.resourcesPath}/js/angular.min.js"></script>
+<script src="${url.resourcesPath}/js/angular.min.js"></script>
 
 
-    <script>
-        var idpLoginFullUrl = '${idpLoginFullUrl?no_esc}';
-    </script>
 
 
-	<script>
+<script>
+    var idpLoginFullUrl = '${idpLoginFullUrl?no_esc}';
+</script>
 
 
-		var angularLoginPart = angular.module("angularLoginPart", []);
-
-        angularLoginPart.directive("onScroll", [function () {
-            var previousScroll = 0;
-            var link = function ($scope, $element, attrs) {
-                $element.bind('scroll', function (evt) {
-                    var currentScroll = $element.scrollTop;
-                    $scope.$eval(attrs["onScroll"], {$event: evt, $direct: currentScroll > previousScroll ? 1 : -1});
-                    previousScroll = currentScroll;
-                });
-            };
-            return {
-                restrict: "A",
-                link: link
-            };
-        }]);
+<script>
 
 
-		angularLoginPart.controller("idpListing", function($scope, $http) {
+    var angularLoginPart = angular.module("angularLoginPart", []);
+    var cookieName = "KEYCLOAK_POLICY_ACKNOWLEDGEMENT_ACCEPTED"
+    
+    angularLoginPart.directive("onScroll", [function () {
+        var previousScroll = 0;
+        var link = function ($scope, $element, attrs) {
+            $element.bind('scroll', function (evt) {
+                var currentScroll = $element.scrollTop;
+                $scope.$eval(attrs["onScroll"], {$event: evt, $direct: currentScroll > previousScroll ? 1 : -1});
+                previousScroll = currentScroll;
+            });
+        };
+        return {
+            restrict: "A",
+            link: link
+        };
+    }]);
 
-            $scope.disabledLoginButtons = false; // Shared variable to disable all buttons
 
-            $scope.handleLoginClick = function(idp) {
-                if (!$scope.disabledLoginButtons) {
-                    $scope.disabledLoginButtons = true; // Disable all buttons
-                    window.location.href = idp.loginUrl; // Redirect to the login URL
-                }
-            };
+    angularLoginPart.controller("idpListing", function($scope, $http) {
 
-            var sessionParams = new URL(baseUriOrigin+idpLoginFullUrl).searchParams;
+        $scope.disabledLoginButtons = false; // Shared variable to disable all buttons
 
-            $scope.maxIdPsWithoutSearch = 1;
-            $scope.fetchParams = { 'keyword': null, 'first' : 0, 'max': 20, 'client_id': sessionParams.get('client_id'), 'tab_id': sessionParams.get('tab_id'), 'session_code': sessionParams.get('session_code')};
-            $scope.idps = [];
-            $scope.totalIdpsAskedFor = 0;
-            $scope.reachedEndPage = false;
-            $scope.latestSearch = {};  //for sync purposes
-            $scope.isSearching = false;
-
-            function setLoginUrl(idp){
-                idp.loginUrl = baseUriOrigin + idpLoginFullUrl.replace("/_/", "/"+idp.alias+"/");
+        $scope.handleLoginClick = function(idp) {
+            if (!$scope.disabledLoginButtons) {
+                $scope.disabledLoginButtons = true; // Disable all buttons
+                window.location.href = idp.loginUrl; // Redirect to the login URL
             }
+        };
 
-            function getIdps() {
-                var submissionTimestamp = new Date().getTime(); //to let the current values be accessible within the callbacks
-                var searchParams = $scope.fetchParams; //to let the current values be accessible within the callbacks
-                $scope.latestSearch = { submissionTimestamp: submissionTimestamp, searchParams: searchParams };
-                $scope.isSearching = true;
-                $http({method: 'GET', url: baseUri + '/realms/' + realm + '/theme-info/identity-providers', params : $scope.fetchParams })
-                    .then(
-                        function(success) {
-                            //if we have typed fast multiple chars in the searchbox and the search results delay, this might end up appending duplicate values. prevent it
-                            if((searchParams.first == 0) && (submissionTimestamp != $scope.latestSearch.submissionTimestamp)) { //reject the results, there is a newer search
-                                return;
-                            }
-                            $scope.isSearching = false;
-                            if(success.data != null && Array.isArray(success.data)){
-                                success.data.forEach(function(idp) {
-                                    setLoginUrl(idp);
-                                    $scope.idps.push(idp);
-                                });
-                            }
-                            else {
-                                $scope.reachedEndPage = true;
-                            }
-                            $scope.totalIdpsAskedFor += $scope.fetchParams.max;
-                        },
-                        function(error){
-                            $scope.isSearching = false;
+        var sessionParams = new URL(baseUriOrigin + idpLoginFullUrl).searchParams;
+
+        $scope.maxIdPsWithoutSearch = 1;
+        $scope.fetchParams = {
+            'keyword': null,
+            'first' : 0,
+            'max': 20,
+            'client_id': sessionParams.get('client_id'),
+            'tab_id': sessionParams.get('tab_id'),
+            'session_code': sessionParams.get('session_code')
+        };
+        $scope.idps = [];
+        $scope.totalIdpsAskedFor = 0;
+        $scope.reachedEndPage = false;
+        $scope.latestSearch = {};  //for sync purposes
+        $scope.isSearching = false;
+
+        function setLoginUrl(idp){
+            idp.loginUrl = baseUriOrigin + idpLoginFullUrl.replace("/_/", "/" + idp.alias + "/");
+        }
+
+        function getIdps() {
+            var submissionTimestamp = new Date().getTime(); //to let the current values be accessible within the callbacks
+            var searchParams = $scope.fetchParams; //to let the current values be accessible within the callbacks
+            $scope.latestSearch = { submissionTimestamp: submissionTimestamp, searchParams: searchParams };
+            $scope.isSearching = true;
+            $http({method: 'GET', url: baseUri + '/realms/' + realm + '/theme-info/identity-providers', params : $scope.fetchParams })
+                .then(
+                    function(success) {
+                        //if we have typed fast multiple chars in the searchbox and the search results delay, this might end up appending duplicate values. prevent it
+                        if ((searchParams.first == 0) && (submissionTimestamp != $scope.latestSearch.submissionTimestamp)) { //reject the results, there is a newer search
+                            return;
                         }
-                    );
-            }
-
-            function getPromotedIdps() {
-                $http({method: 'GET', url: baseUri + '/realms/' + realm + '/theme-info/identity-providers-promoted' })
-                    .then(
-                        function(success) {
-                             var response = success.data;
-                             $scope.promotedIdps = response.promotedIdPs;
-                             $scope.promotedIdps.forEach(function(idp) {
-                               setLoginUrl(idp);
-                             });
-                             $scope.lastLoginIdPs = response.lastLoginIdPs;
-                             $scope.lastLoginIdPs.forEach(function(idp) {
-                               setLoginUrl(idp);
-                             });
-                        },
-                        function(error){
+                        $scope.isSearching = false;
+                        if (success.data != null && Array.isArray(success.data)) {
+                            success.data.forEach(function(idp) {
+                                setLoginUrl(idp);
+                                $scope.idps.push(idp);
+                            });
                         }
-                    );
-            }
-
-            getIdps();
-
-            getPromotedIdps();
-
-
-
-            $scope.scrollCallback = function ($event, $direct) {
-                if($scope.reachedEndPage==true || $event.target.lastElementChild==null)
-                    return;
-                if(($event.target.scrollTop + $event.target.clientHeight) > ($event.target.scrollHeight - $event.target.lastElementChild.clientHeight)){
-                    if($scope.totalIdpsAskedFor < $scope.fetchParams.first + $scope.fetchParams.max){ //means that there is an ongoing fetching or reached the end
-                        console.log("loading or reached end of stream");
+                        else {
+                            $scope.reachedEndPage = true;
+                        }
+                        $scope.totalIdpsAskedFor += $scope.fetchParams.max;
+                    },
+                    function(error){
+                        $scope.isSearching = false;
                     }
-                    else{
-                        $scope.fetchParams.first += $scope.fetchParams.max;
-                        getIdps();
+                );
+        }
+
+        function getPromotedIdps() {
+            $http({method: 'GET', url: baseUri + '/realms/' + realm + '/theme-info/identity-providers-promoted' })
+                .then(
+                    function(success) {
+                         var response = success.data;
+                         $scope.promotedIdps = response.promotedIdPs || [];
+                         $scope.promotedIdps.forEach(function(idp) {
+                           setLoginUrl(idp);
+                         });
+                         $scope.lastLoginIdPs = response.lastLoginIdPs || [];
+                         $scope.lastLoginIdPs.forEach(function(idp) {
+                           setLoginUrl(idp);
+                         });
+                    },
+                    function(error){
                     }
+                );
+        }
+
+        getIdps();
+
+        getPromotedIdps();
+
+
+
+        $scope.scrollCallback = function ($event, $direct) {
+            if ($scope.reachedEndPage == true || $event.target.lastElementChild == null)
+                return;
+            if (($event.target.scrollTop + $event.target.clientHeight) > ($event.target.scrollHeight - $event.target.lastElementChild.clientHeight)) {
+                if ($scope.totalIdpsAskedFor < $scope.fetchParams.first + $scope.fetchParams.max) { //means that there is an ongoing fetching or reached the end
+                    console.log("loading or reached end of stream");
                 }
-
-            };
-
-            $scope.$watch(
-                "fetchParams.keyword",
-                function handleChange(newValue, oldValue) {
-                  if (newValue !== oldValue) {
-                    $scope.idps = [];
-                    $scope.fetchParams.first = 0;
-                    $scope.totalIdpsAskedFor = 0;
-                    $scope.reachedEndPage = false;
-                    $scope.latestSearch = { timestamp: new Date().getTime(), keyword: newValue };
+                else {
+                    $scope.fetchParams.first += $scope.fetchParams.max;
                     getIdps();
-                  }
                 }
-              );
-
-
-        });
-
-
-    </script>
-    <style>
-            .input-container {
-                position: relative;
-            }
-            .input-container .fa-search {
-                position: absolute;
-                left: 10px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: #aaa;
-            }
-            .input-container input {
-                width: 100%;
-                padding-left: 30px; /* Adjust based on icon size */
-                box-sizing: border-box;
             }
 
-            .hr-sect {
-                display: flex;
-                flex-basis: 100%;
-                align-items: center;
-                color: rgba(0, 0, 0, 0.35);
-                margin: 8px 0px;
+        };
+
+        $scope.$watch(
+            "fetchParams.keyword",
+            function handleChange(newValue, oldValue) {
+              if (newValue !== oldValue) {
+                $scope.idps = [];
+                $scope.fetchParams.first = 0;
+                $scope.totalIdpsAskedFor = 0;
+                $scope.reachedEndPage = false;
+                $scope.latestSearch = { timestamp: new Date().getTime(), keyword: newValue };
+                getIdps();
+              }
             }
-            .hr-sect:before,
-            .hr-sect:after {
-                content: "";
-                flex-grow: 1;
-                background: rgba(0, 0, 0, 0.35);
-                height: 1px;
-                font-size: 0px;
-                line-height: 0px;
-                margin: 0px 8px;
+        );
+
+
+    });
+
+
+    /* ---------------- Policy acknowledgement popup ---------------- */
+
+    function getPolicyAcknowledgementScopePath() {
+        try {
+            return new URL(baseUri + '/realms/' + realm + '/').pathname;
+        } catch (e) {
+            return '/realms/' + realm + '/';
+        }
+    }
+
+    function sanitizeForCookieName(value) {
+        return String(value).replace(/[^a-zA-Z0-9_-]/g, '_');
+    }
+
+
+
+
+    function getCookieValueByName(name) {
+        var nameEq = name + '=';
+        var cookies = document.cookie ? document.cookie.split('; ') : [];
+
+        for (var i = 0; i < cookies.length; i++) {
+            if (cookies[i].indexOf(nameEq) === 0) {
+                return cookies[i].substring(nameEq.length);
             }
-      </style>
+        }
+
+        return null;
+    }
+
+    function hasAcceptedPolicyAcknowledgement() {
+        return getCookieValueByName(cookieName) === 'true';
+    }
+
+    function setPolicyAcknowledgementStorage() {
+        var cookiePath = getPolicyAcknowledgementScopePath();
+
+        var secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
+        document.cookie =
+            cookieName + '=true' +
+            '; path=' + cookiePath +
+            '; max-age=31536000' +
+            '; SameSite=Lax' +
+            secureFlag;
+    }
+
+    function acceptPolicyAcknowledgement() {
+        setPolicyAcknowledgementStorage();
+
+        var overlay = document.getElementById('policy-acknowledgement-overlay');
+        if (overlay) {
+            overlay.classList.add('policy-acknowledgement-hidden');
+        }
+
+        document.body.classList.remove('policy-acknowledgement-open');
+    }
+
+    function isPolicyAcknowledgementEnabled(config) {
+        var entries = config && config['policyAcknowledgementPopupEnabled'];
+        if (!entries || entries.length === 0 || entries[0] == null) {
+            return false;
+        }
+
+        var value = String(entries[0]).trim().toLowerCase();
+        return value === 'true' || value === '1' || value === 'yes' || value === 'on';
+    }
+
+    function applyPolicyAcknowledgementConfig(config) {
+        var overlay = document.getElementById('policy-acknowledgement-overlay');
+
+        if (!overlay) {
+            return;
+        }
+
+        if (!isPolicyAcknowledgementEnabled(config)) {
+            overlay.classList.add('policy-acknowledgement-hidden');
+            document.body.classList.remove('policy-acknowledgement-open');
+            return;
+        }
+
+        if (!hasAcceptedPolicyAcknowledgement()) {
+            overlay.classList.remove('policy-acknowledgement-hidden');
+            document.body.classList.add('policy-acknowledgement-open');
+        } else {
+            overlay.classList.add('policy-acknowledgement-hidden');
+            document.body.classList.remove('policy-acknowledgement-open');
+        }
+    }
+
+    function loadPolicyAcknowledgementConfig() {
+        fetch(baseUri + '/realms/' + realm + '/theme-info/theme-config')
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(config) {
+                applyPolicyAcknowledgementConfig(config || {});
+            })
+            .catch(function() {
+                var overlay = document.getElementById('policy-acknowledgement-overlay');
+                if (overlay) {
+                    overlay.classList.add('policy-acknowledgement-hidden');
+                }
+                document.body.classList.remove('policy-acknowledgement-open');
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadPolicyAcknowledgementConfig();
+    });
+</script>
+
+<style>
+    .input-container {
+        position: relative;
+    }
+
+    .input-container .fa-search {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #aaa;
+    }
+
+    .input-container input {
+        width: 100%;
+        padding-left: 30px; /* Adjust based on icon size */
+        box-sizing: border-box;
+    }
+
+    .hr-sect {
+        display: flex;
+        flex-basis: 100%;
+        align-items: center;
+        color: rgba(0, 0, 0, 0.35);
+        margin: 8px 0px;
+    }
+
+    .hr-sect:before,
+    .hr-sect:after {
+        content: "";
+        flex-grow: 1;
+        background: rgba(0, 0, 0, 0.35);
+        height: 1px;
+        font-size: 0px;
+        line-height: 0px;
+        margin: 0px 8px;
+    }
+
+    body.policy-acknowledgement-open {
+        overflow: hidden;
+    }
+
+    .policy-acknowledgement-overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 99999;
+    }
+
+    .policy-acknowledgement-hidden {
+        display: none !important;
+    }
+
+    .policy-acknowledgement-modal {
+        width: 100%;
+        max-width: 860px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+        padding: 36px 40px;
+        text-align: left;
+        border: 2px solid #0d2235;
+    }
+
+    .policy-acknowledgement-title {
+        margin: 0 0 24px 0;
+        font-size: 34px;
+        line-height: 1.2;
+        font-weight: 700;
+        color: #06263d;
+    }
+
+    .policy-acknowledgement-message {
+        font-size: 16px;
+        line-height: 1.7;
+        color: #243746;
+    }
+
+    .policy-acknowledgement-message p {
+        margin: 0 0 18px 0;
+    }
+
+    .policy-acknowledgement-message ul {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 20px 0;
+    }
+
+    .policy-acknowledgement-message li {
+        margin-bottom: 22px;
+    }
+
+    .policy-acknowledgement-message li > strong {
+        display: inline-block;
+        background: #eef2f5;
+        border-radius: 14px;
+        padding: 10px 18px;
+        font-size: 18px;
+        font-weight: 600;
+        color: #06263d;
+        margin-bottom: 10px;
+    }
+
+    .policy-acknowledgement-message li p {
+        margin-top: 10px;
+    }
+
+    .policy-acknowledgement-message a {
+        color: #0b5cab;
+        text-decoration: underline;
+    }
+
+    .policy-acknowledgement-message a:hover,
+    .policy-acknowledgement-message a:focus {
+        color: #084986;
+    }
+
+    .policy-acknowledgement-button {
+        display: block;
+        min-width: 280px;
+        margin: 28px auto 0 auto;
+        border: 0;
+        border-radius: 10px;
+        padding: 16px 28px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+        background: #d9d9d9;
+        color: #7a8a96;
+        transition: background 0.2s ease-in-out, color 0.2s ease-in-out;
+    }
+
+    .policy-acknowledgement-button:hover,
+    .policy-acknowledgement-button:focus {
+        background: #0b5cab;
+        color: #ffffff;
+        outline: none;
+    }
+</style>
 
 <@layout.registrationLayout displayMessage=!messagesPerField.existsError('username','password') displayInfo=realm.password && realm.registrationAllowed && !registrationDisabled??; section>
     <#if section = "header">
         ${msg("loginAccountTitle")}
     <#elseif section = "form">
+
+    <div id="policy-acknowledgement-overlay"
+         class="policy-acknowledgement-overlay policy-acknowledgement-hidden"
+         role="dialog"
+         aria-modal="true"
+         aria-labelledby="policy-acknowledgement-title"
+         aria-describedby="policy-acknowledgement-message">
+        <div class="policy-acknowledgement-modal">
+            <h2 id="policy-acknowledgement-title" class="policy-acknowledgement-title">${msg("policyAcknowledgementTitle")}</h2>
+            <div id="policy-acknowledgement-message" class="policy-acknowledgement-message">${kcSanitize(msg("policyAcknowledgementMessage"))?no_esc}</div>
+            <button id="policy-acknowledgement-button"
+                    type="button"
+                    class="policy-acknowledgement-button"
+                    onclick="acceptPolicyAcknowledgement()">${msg("policyAcknowledgementButtonLabel")}</button>
+        </div>
+    </div>
+
     <div id="kc-form">
 
       <div ng-app="angularLoginPart" ng-controller="idpListing">
