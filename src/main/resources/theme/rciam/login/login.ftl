@@ -302,19 +302,61 @@
         margin: 0px 8px;
     }
 
+    .idp-login-button {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .idp-button-content {
+        display: grid;
+        grid-template-columns: 56px 1fr 56px;
+        align-items: center;
+        width: 100%;
+    }
+
+    .idp-logo-slot {
+        grid-column: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+    }
+
+    .idp-logo {
+        display: inline-block;
+        width: 28px;
+        height: 28px;
+        background-size: contain !important;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    .idp-name {
+        grid-column: 2;
+        text-align: center;
+        justify-self: center;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
     body.policy-acknowledgement-open {
         overflow: hidden;
     }
 
     .policy-acknowledgement-overlay {
         position: fixed;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: block;
         padding: 24px;
         background: rgba(0, 0, 0, 0.55);
         z-index: 99999;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
     }
 
     .policy-acknowledgement-hidden {
@@ -330,6 +372,7 @@
         padding: 36px 40px;
         text-align: left;
         border: 2px solid #0d2235;
+        margin: 24px auto;
     }
 
     .policy-acknowledgement-title {
@@ -406,6 +449,29 @@
         color: #ffffff;
         outline: none;
     }
+    
+    @media (max-width: 600px) {
+        .policy-acknowledgement-overlay {
+            padding: 12px;
+        }
+
+        .policy-acknowledgement-modal {
+            padding: 24px 18px;
+            border-radius: 12px;
+            margin: 12px auto;
+        }
+
+        .policy-acknowledgement-title {
+            font-size: 26px;
+        }
+
+        .policy-acknowledgement-button {
+            width: 100%;
+            min-width: 0;
+            margin-top: 22px;
+            margin-bottom: 12px;
+        }
+    }
 </style>
 
 <@layout.registrationLayout displayMessage=!messagesPerField.existsError('username','password') displayInfo=realm.password && realm.registrationAllowed && !registrationDisabled??; section>
@@ -430,83 +496,131 @@
     </div>
 
     <div id="kc-form">
+        <div ng-app="angularLoginPart" ng-controller="idpListing">
 
-      <div ng-app="angularLoginPart" ng-controller="idpListing">
-
-        <div style="height:0px; position: relative; top: 50%; left: 50%;">
-            <img id='spinner' src='${url.resourcesPath}/img/spinner.svg' ng-class="{'hidden' : !isSearching }" style="position: relative; transform: translate(-50%, -50%); width:100px; height:100px;" />
-        </div>
-
-        <div ng-if="(idps!=null && idps.length>0) || fetchParams.keyword!=null" id="kc-social-providers" class="${properties.kcFormSocialAccountSectionClass!}">
-
-            <div ng-if="(idps.length >= maxIdPsWithoutSearch && fetchParams.keyword==null) || fetchParams.keyword!=null" class="input-container">
-                <i class="kc-social-provider-logo fa fa-search" id="kc-providers-filter-button"> </i>
-                <input id="kc-providers-filter" type="text" placeholder="${msg('searchAuthenticationProvider')}" ng-model="fetchParams.keyword" style="padding: 5px 40px;">
-            </div>
-            <div ng-if="(idps.length < maxIdPsWithoutSearch) || (fetchParams.keyword!=null && fetchParams.keyword!='')">
-               <ul id="kc-providers-list" class="${properties.kcFormSocialAccountListClass!} login-pf-list-scrollable" on-scroll="scrollCallback($event, $direct)" >
-                  <a ng-repeat="idp in idps" 
-                     id="social-{{idp.alias}}" 
-                     class="${properties.kcFormSocialAccountListTertiaryButtonClass!}" 
-                     ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : idps.length > 3 }" 
-                     type="button" 
-                     ng-click="handleLoginClick(idp)" 
-                     ng-disabled="disabledLoginButtons">
-                     <div ng-if="idp.logoUri!=null">
-                         <i class="${properties.kcCommonLogoIdP!} fa fa-extend" style="background-size: 100%;background-image: url({{idp.logoUri}});" aria-hidden="true"></i>
-                         <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                     </div>
-                     <div ng-if="idp.iconClasses && idp.logoUri==null">
-                        <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
-                        <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                     </div>
-                     <div ng-if="!idp.iconClasses && idp.logoUri==null">
-                        <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                     </div>
-                  </a>
-               </ul>
+            <div style="height:0px; position: relative; top: 50%; left: 50%;">
+                <img id="spinner" src="${url.resourcesPath}/img/spinner.svg"  ng-class="{'hidden' : !isSearching }"
+                     style="position: relative; transform: translate(-50%, -50%); width:100px; height:100px;" />
             </div>
 
-            <div ng-if="promotedIdps.length>0 || lastLoginIdPs.length>0" id="kc-social-providers" class="${properties.kcFormSocialAccountSectionClass!}">
-                <div class="hr-sect">
-                    <h4>${msg("general-identity-providers")}</h4>
+            <div ng-if="(idps!=null && idps.length>0) || fetchParams.keyword!=null"
+                 id="kc-social-providers"
+                 class="${properties.kcFormSocialAccountSectionClass!}">
+
+                <div ng-if="(idps.length >= maxIdPsWithoutSearch && fetchParams.keyword==null) || fetchParams.keyword!=null"
+                     class="input-container">
+                    <i class="kc-social-provider-logo fa fa-search" id="kc-providers-filter-button"></i>
+                    <input id="kc-providers-filter"
+                           type="text"
+                           placeholder="${msg('searchAuthenticationProvider')}"
+                           ng-model="fetchParams.keyword"
+                           style="padding: 5px 40px;">
                 </div>
-                <ul class="${properties.kcFormSocialAccountListClass!} ">
-                    <a ng-repeat="idp in lastLoginIdPs" id="social-{{idp.alias}}"
-                        class="${properties.kcFormSocialAccountListSecondaryButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : promotedIdps.length > 3 }"
-                        type="button" ng-click="handleLoginClick(idp)" ng-disabled="isAnyButtonDisabled" 
-                        title="${msg('previousLoginProvider')}">
-                        <div ng-if="idp.logoUri!=null">
-                            <i class="${properties.kcCommonLogoIdP!} fa fa-extend" style="background-size: 100%;background-image: url({{idp.logoUri}});" aria-hidden="true"></i>
-                            <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                        </div>
-                        <div ng-if="idp.iconClasses && idp.logoUri==null">
-                            <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
-                            <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                        </div>
-                        <div ng-if="!idp.iconClasses && idp.logoUri==null">
-                            <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                        </div>
-                    </a>
-                    <a ng-repeat="idp in promotedIdps" id="social-{{idp.alias}}" class="${properties.kcFormSocialAccountListTertiaryButtonClass!}" ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : promotedIdps.length > 3 }" type="button" ng-click="handleLoginClick(idp)" ng-disabled="isAnyButtonDisabled">
-                        <div ng-if="idp.logoUri!=null">
-                           <i class="${properties.kcCommonLogoIdP!} fa fa-extend" style="background-size: 100%;background-image: url({{idp.logoUri}});" aria-hidden="true"></i>
-                           <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                        </div>
-                        <div ng-if="idp.iconClasses && idp.logoUri==null">
-                            <i class="${properties.kcCommonLogoIdP!}" ng-class="{ '{{idp.iconClasses}}' : idp.iconClasses!=null}" aria-hidden="true"></i>
-                            <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                        </div>
-                        <div ng-if="!idp.iconClasses && idp.logoUri==null">
-                             <span class="${properties.kcFormSocialAccountNameClass!}">{{idp.displayName}}</span>
-                        </div>
-                    </a>
-                </ul>
+
+                <div ng-if="(idps.length < maxIdPsWithoutSearch) || (fetchParams.keyword!=null && fetchParams.keyword!='')">
+                    <ul id="kc-providers-list"
+                        class="${properties.kcFormSocialAccountListClass!} login-pf-list-scrollable"
+                        on-scroll="scrollCallback($event, $direct)">
+
+                        <a ng-repeat="idp in idps"
+                           id="social-{{idp.alias}}"
+                           class="${properties.kcFormSocialAccountListTertiaryButtonClass!} idp-login-button"
+                           ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : idps.length > 3 }"
+                           type="button"
+                           ng-click="handleLoginClick(idp)"
+                           ng-disabled="disabledLoginButtons">
+
+                            <div class="idp-button-content">
+                                <span class="idp-logo-slot">
+                                    <i ng-if="idp.logoUri!=null"
+                                       class="${properties.kcCommonLogoIdP!} fa fa-extend idp-logo"
+                                       style="background-image: url({{idp.logoUri}});"
+                                       aria-hidden="true"></i>
+
+                                    <i ng-if="idp.iconClasses && idp.logoUri==null"
+                                       class="${properties.kcCommonLogoIdP!} idp-logo"
+                                       ng-class="idp.iconClasses"
+                                       aria-hidden="true"></i>
+                                </span>
+
+                                <span class="${properties.kcFormSocialAccountNameClass!} idp-name">
+                                    {{idp.displayName}}
+                                </span>
+                            </div>
+                        </a>
+                    </ul>
+                </div>
+
+                <div ng-if="promotedIdps.length>0 || lastLoginIdPs.length>0"
+                     id="kc-social-providers-promoted"
+                     class="${properties.kcFormSocialAccountSectionClass!}">
+
+                    <div class="hr-sect">
+                        <h4>${msg("general-identity-providers")}</h4>
+                    </div>
+
+                    <ul class="${properties.kcFormSocialAccountListClass!}">
+
+                        <a ng-repeat="idp in lastLoginIdPs"
+                           id="social-{{idp.alias}}"
+                           class="${properties.kcFormSocialAccountListSecondaryButtonClass!} idp-login-button"
+                           ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : promotedIdps.length > 3 }"
+                           type="button"
+                           ng-click="handleLoginClick(idp)"
+                           ng-disabled="disabledLoginButtons"
+                           title="${msg('previousLoginProvider')}">
+
+                            <div class="idp-button-content">
+                                <span class="idp-logo-slot">
+                                    <i ng-if="idp.logoUri!=null"
+                                       class="${properties.kcCommonLogoIdP!} fa fa-extend idp-logo"
+                                       style="background-image: url({{idp.logoUri}});"
+                                       aria-hidden="true"></i>
+
+                                    <i ng-if="idp.iconClasses && idp.logoUri==null"
+                                       class="${properties.kcCommonLogoIdP!} idp-logo"
+                                       ng-class="idp.iconClasses"
+                                       aria-hidden="true"></i>
+                                </span>
+
+                                <span class="${properties.kcFormSocialAccountNameClass!} idp-name">
+                                    {{idp.displayName}}
+                                </span>
+                            </div>
+                        </a>
+
+                        <a ng-repeat="idp in promotedIdps"
+                           id="social-{{idp.alias}}"
+                           class="${properties.kcFormSocialAccountListTertiaryButtonClass!} idp-login-button"
+                           ng-class="{ '${properties.kcFormSocialAccountGridItem!}' : promotedIdps.length > 3 }"
+                           type="button"
+                           ng-click="handleLoginClick(idp)"
+                           ng-disabled="disabledLoginButtons">
+
+                            <div class="idp-button-content">
+                                <span class="idp-logo-slot">
+                                    <i ng-if="idp.logoUri!=null"
+                                       class="${properties.kcCommonLogoIdP!} fa fa-extend idp-logo"
+                                       style="background-image: url({{idp.logoUri}});"
+                                       aria-hidden="true"></i>
+
+                                    <i ng-if="idp.iconClasses && idp.logoUri==null"
+                                       class="${properties.kcCommonLogoIdP!} idp-logo"
+                                       ng-class="idp.iconClasses"
+                                       aria-hidden="true"></i>
+                                </span>
+
+                                <span class="${properties.kcFormSocialAccountNameClass!} idp-name">
+                                    {{idp.displayName}}
+                                </span>
+                            </div>
+                        </a>
+                    </ul>
+                </div>
             </div>
         </div>
-      </div>
-
     </div>
+
     <#elseif section = "info" >
         <#if realm.password && realm.registrationAllowed && !registrationDisabled??>
             <div id="kc-registration-container">
