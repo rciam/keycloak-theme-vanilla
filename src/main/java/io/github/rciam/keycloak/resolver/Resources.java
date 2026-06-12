@@ -126,7 +126,7 @@ public class Resources {
                         logger.error(String.format("Theme: Could not monitor folder %s for file changes. Expect serious problem with the terms of use in the UI", getResourcesFolderPathOfRealm(realmName)));
                     }
 
-                    cluster.notify(CREATE_RESOURCE, RealmCreatedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_BUT_LOCAL_DC); //broadcast creation event to all other cluster nodes
+                    cluster.notify(CREATE_RESOURCE, RealmCreatedEvent.create(realmName), true); //broadcast creation event to all other cluster nodes
                 }
                 else if(event instanceof RealmModel.RealmRemovedEvent) {
                     String realmName = ((RealmModel.RealmRemovedEvent)event).getRealm().getName();
@@ -138,7 +138,7 @@ public class Resources {
                     //remove the whole dir contents
                     Commons.deleteFolderAndContents(new File(getResourcesFolderPathOfRealm(realmName)));
 
-                    cluster.notify(DELETE_RESOURCE, RealmDeletedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_BUT_LOCAL_DC); //broadcast deletion event to all other cluster nodes
+                    cluster.notify(DELETE_RESOURCE, RealmDeletedEvent.create(realmName), true); //broadcast deletion event to all other cluster nodes
                 }
             });
 

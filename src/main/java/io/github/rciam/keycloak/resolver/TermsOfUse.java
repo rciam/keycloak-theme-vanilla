@@ -1,6 +1,5 @@
 package io.github.rciam.keycloak.resolver;
 
-import io.github.rciam.keycloak.resolver.stubs.Configuration;
 import io.github.rciam.keycloak.resolver.stubs.cluster.RealmCreatedEvent;
 import io.github.rciam.keycloak.resolver.stubs.cluster.RealmDeletedEvent;
 import org.jboss.logging.Logger;
@@ -22,8 +21,6 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
@@ -91,7 +88,7 @@ public class TermsOfUse {
                 if(event instanceof RealmModel.RealmCreationEvent) {
                     String realmName = ((RealmModel.RealmCreationEvent)event).getCreatedRealm().getName();
                     localSynchronizeRealmTermsOfUse(realmName);
-                    cluster.notify(CREATE_TERMS_OF_USE, RealmCreatedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast creation event to all other cluster nodes
+                    cluster.notify(CREATE_TERMS_OF_USE, RealmCreatedEvent.create(realmName), true); //broadcast creation event to all other cluster nodes
                 }
                 else if(event instanceof RealmModel.RealmRemovedEvent) {
                     String realmName = ((RealmModel.RealmRemovedEvent)event).getRealm().getName();
@@ -99,7 +96,7 @@ public class TermsOfUse {
                     File htmlFile = new File(filePath);
                     if(htmlFile.exists())
                         htmlFile.delete();
-                    cluster.notify(DELETE_TERMS_OF_USE, RealmDeletedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast deletion event to all other cluster nodes
+                    cluster.notify(DELETE_TERMS_OF_USE, RealmDeletedEvent.create(realmName), true); //broadcast deletion event to all other cluster nodes
                 }
             });
             //register cluster listeners

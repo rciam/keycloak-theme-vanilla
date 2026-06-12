@@ -6,7 +6,7 @@
 
     <groupId>org.rciam.keycloak</groupId>
     <artifactId>keycloak-theme-vanilla</artifactId>
-    <version>6.1.2</version>
+    <version>6.2.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -14,7 +14,7 @@
         <account.ui.dir>src/main/resources/theme/rciam/account</account.ui.dir>
 
         <maven.compiler.release>21</maven.compiler.release>
-        <keycloak.version>26.4.7</keycloak.version>
+        <keycloak.version>26.6.3</keycloak.version>
         <infinispan.version>15.0.19.Final</infinispan.version>
         <node.version>v20.18.0</node.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -1,6 +1,5 @@
 package io.github.rciam.keycloak.resolver;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.rciam.keycloak.resolver.stubs.Configuration;
@@ -11,13 +10,9 @@ import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.RealmModel;
-
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,11 +20,8 @@ import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
@@ -41,8 +33,6 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 public class ThemeConfig {
 
     private static final Logger logger = Logger.getLogger(ThemeConfig.class);
-
-    private static ObjectMapper om = new ObjectMapper();
 
     private static boolean REALMS_LISTENER_ADDED = false;
     private static final String CREATE_THEME_CONFIG = "CREATE_THEME_CONFIG";
@@ -112,7 +102,7 @@ public class ThemeConfig {
                 if(event instanceof RealmModel.RealmCreationEvent) {
                     String realmName = ((RealmModel.RealmCreationEvent)event).getCreatedRealm().getName();
                     localSynchronizeConfig(realmName);
-                    cluster.notify(CREATE_THEME_CONFIG, RealmCreatedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast event to all other cluster nodes
+                    cluster.notify(CREATE_THEME_CONFIG, RealmCreatedEvent.create(realmName), true); //broadcast event to all other cluster nodes
                 }
                 else if(event instanceof RealmModel.RealmRemovedEvent) {
                     String realmName = ((RealmModel.RealmRemovedEvent)event).getRealm().getName();
@@ -120,7 +110,7 @@ public class ThemeConfig {
                     File configFile = new File(filePath);
                     if(configFile.exists())
                         configFile.delete();
-                    cluster.notify(DELETE_THEME_CONFIG, RealmDeletedEvent.create(realmName), true, ClusterProvider.DCNotify.ALL_DCS); //broadcast event to all other cluster nodes
+                    cluster.notify(DELETE_THEME_CONFIG, RealmDeletedEvent.create(realmName), true); //broadcast event to all other cluster nodes
                 }
             });
             //register cluster listeners
