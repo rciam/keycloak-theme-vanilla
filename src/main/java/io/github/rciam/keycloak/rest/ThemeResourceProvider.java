@@ -95,7 +95,6 @@ public class ThemeResourceProvider implements RealmResourceProvider {
     private static final String LINKEDIN_IDP_PROVIDER_ID = "linkedin-openid-connect";
     private static final String LINKEDIN_IDP_FA = "linkedin";
     private static final String IDP_THEME_CONFIG_PREFIX = "kcTheme-";
-    private static final String ALIAS_IN = "aliasIn";
 
     protected ClientConnection clientConnection;
 
@@ -104,18 +103,13 @@ public class ThemeResourceProvider implements RealmResourceProvider {
     private static TermsOfUse termsOfUse;
     private static Resources resources;
 
-    public ThemeResourceProvider(KeycloakSession session) {
+    public ThemeResourceProvider(KeycloakSession session, ThemeConfig themeConfig, TermsOfUse termsOfUse, Resources resources) {
         this.session = session;
         this.clientConnection = session.getContext().getConnection();
-        if (themeConfig == null) {
-            themeConfig = new ThemeConfig(session);
-        }
-        if (termsOfUse == null) {
-            termsOfUse = new TermsOfUse(session);
-        }
-        if (resources == null) {
-            resources = new Resources(session);
-        }
+        this.themeConfig = themeConfig;
+        this.termsOfUse = termsOfUse;
+        this.resources = resources;
+
     }
 
     @Override

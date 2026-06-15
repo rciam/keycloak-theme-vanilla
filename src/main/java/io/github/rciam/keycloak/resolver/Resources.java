@@ -3,8 +3,6 @@ package io.github.rciam.keycloak.resolver;
 import io.github.rciam.keycloak.exception.InaccessibleFileException;
 import io.github.rciam.keycloak.exception.InvalidPathException;
 import io.github.rciam.keycloak.resolver.stubs.cache.CacheKey;
-import io.github.rciam.keycloak.resolver.stubs.cluster.RealmCreatedEvent;
-import io.github.rciam.keycloak.resolver.stubs.cluster.RealmDeletedEvent;
 import org.infinispan.Cache;
 import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.configuration.cache.Configuration;
@@ -12,10 +10,6 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.jboss.logging.Logger;
-import org.keycloak.cluster.ClusterEvent;
-import org.keycloak.cluster.ClusterProvider;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,11 +38,6 @@ public class Resources {
     private static String CACHE_NAME = "realm-resources";
     private static long MAX_RESOURCES_IN_CACHE = 50;
     private static Long MAX_CACHE_FILE_SIZE_BYTES = 1048576L; //1MB
-
-    private static boolean REALMS_LISTENER_ADDED = false;
-    private static final String CREATE_RESOURCE = "CREATE_RESOURCE";
-    private static final String DELETE_RESOURCE = "DELETE_RESOURCE";
-    private static ClusterProvider cluster;
     private static boolean FOLDER_INITIALIZED = false;
 
     private static WatchService watchService;
@@ -56,8 +45,8 @@ public class Resources {
 
     private static Cache<CacheKey, byte[]> realmsResources;
 
-    public Resources(KeycloakSession session){
-        initializeStatics(session);
+    public Resources(){
+        initializeStatics();
     }
 
     public byte[] getResource(CacheKey cacheKey){
@@ -85,7 +74,7 @@ public class Resources {
             realmsResources.put(cacheKey, resource);
     }
 
-    private void initializeStatics(KeycloakSession session) {
+    private void initializeStatics() {
 
         if(!FOLDER_INITIALIZED) {
             try {
@@ -106,67 +95,6 @@ public class Resources {
                     .maxCount(MAX_RESOURCES_IN_CACHE)
                     .build();
             realmsResources = cacheManager.administration().withFlags(CacheContainerAdmin.AdminFlag.VOLATILE).getOrCreateCache(CACHE_NAME, cacheConfiguration);
-        }
-
-        if(cluster == null)
-            cluster = session.getProvider(ClusterProvider.class);
-
-        if(!REALMS_LISTENER_ADDED){
-            //register local listener
-            session.getKeycloakSessionFactory().register(event -> {
-                if(event instanceof RealmModel.RealmCreationEvent) {
-                    String realmName = ((RealmModel.RealmCreationEvent)event).getCreatedRealm().getName();
-                    //create realm folder (if not exists)
-                    createRealmResourcesFolder(realmName);
-                    //add file listener to the folder (if listener does not exist)
-                    try {
-                        registerWatch(Paths.get(getResourcesFolderPathOfRealm(realmName)), realmName);
-                    }
-                    catch(IOException ex){
-                        logger.error(String.format("Theme: Could not monitor folder %s for file changes. Expect serious problem with the terms of use in the UI", getResourcesFolderPathOfRealm(realmName)));
-                    }
-
-                    cluster.notify(CREATE_RESOURCE, RealmCreatedEvent.create(realmName), true); //broadcast creation event to all other cluster nodes
-                }
-                else if(event instanceof RealmModel.RealmRemovedEvent) {
-                    String realmName = ((RealmModel.RealmRemovedEvent)event).getRealm().getName();
-                    //remove the file listener
-                    deregisterWatch(realmName);
-                    //clear the cache of this realm
-                    realmsResources.keySet().stream().filter(cacheKey -> realmName.equals(cacheKey.getRealmName())).collect(Collectors.toList())
-                            .stream().forEach(cacheKey -> realmsResources.evict(cacheKey));
-                    //remove the whole dir contents
-                    Commons.deleteFolderAndContents(new File(getResourcesFolderPathOfRealm(realmName)));
-
-                    cluster.notify(DELETE_RESOURCE, RealmDeletedEvent.create(realmName), true); //broadcast deletion event to all other cluster nodes
-                }
-            });
-
-            //register cluster listeners (these are events coming from the other nodes)
-            cluster.registerListener(CREATE_RESOURCE, (ClusterEvent event) -> {
-                RealmCreatedEvent realmCreatedEvent = (RealmCreatedEvent) event;
-                //create realm folder (if not exists)
-                createRealmResourcesFolder(realmCreatedEvent.getRealmName());
-                //add file listener to the folder (if listener does not exist)
-                try {
-                    registerWatch(Paths.get(getResourcesFolderPathOfRealm(realmCreatedEvent.getRealmName())), realmCreatedEvent.getRealmName());
-                }
-                catch(IOException ex){
-                    logger.error(String.format("Theme: Could not monitor folder %s for file changes. Expect serious problem with the terms of use in the UI", getResourcesFolderPathOfRealm(realmCreatedEvent.getRealmName())));
-                }
-            });
-            cluster.registerListener(DELETE_RESOURCE, (ClusterEvent event) -> {
-                RealmDeletedEvent realmDeletedEvent = (RealmDeletedEvent) event;
-                //remove the file listener
-                deregisterWatch(realmDeletedEvent.getRealmName());
-                //clear the cache of this realm
-                realmsResources.keySet().stream().filter(cacheKey -> realmDeletedEvent.getRealmName().equals(cacheKey.getRealmName())).collect(Collectors.toList())
-                        .stream().forEach(cacheKey -> realmsResources.evict(cacheKey));
-                //remove the whole dir contents
-                Commons.deleteFolderAndContents(new File(getResourcesFolderPathOfRealm(realmDeletedEvent.getRealmName())));
-            });
-
-            REALMS_LISTENER_ADDED = true;
         }
 
         if(watchService == null) {
@@ -239,10 +167,6 @@ public class Resources {
                         boolean valid = key.reset();
                         if (!valid) {
                             watchKeys.remove(key);
-//                            // all directories are inaccessible
-//                            if (watchKeys.isEmpty()) {
-//                                break;
-//                            }
                         }
                     }
 
@@ -261,7 +185,7 @@ public class Resources {
         return String.format("%s/%s/%s", Commons.getBasePath(), Commons.THEME_WORKING_FOLDER, Commons.RESOURCES_FOLDER);
     }
 
-    private String getResourcesFolderPathOfRealm(String realmName){
+    public String getResourcesFolderPathOfRealm(String realmName){
         return String.format("%s/%s/%s/%s", Commons.getBasePath(), Commons.THEME_WORKING_FOLDER, Commons.RESOURCES_FOLDER, realmName);
     }
 
@@ -270,7 +194,7 @@ public class Resources {
     }
 
 
-    private void createRealmResourcesFolder(String realmName){
+    public void createRealmResourcesFolder(String realmName){
         new File(getResourcesFolderPathOfRealm(realmName)).mkdirs();
     }
 
@@ -312,12 +236,12 @@ public class Resources {
         return (WatchEvent<T>)event;
     }
 
-    private void registerWatch(Path dir, String realmName) throws IOException {
+    public void registerWatch(Path dir, String realmName) throws IOException {
         WatchKey key = dir.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
         watchKeys.put(key, new AbstractMap.SimpleEntry<Path, String>(dir, realmName));
     }
 
-    private void deregisterWatch(String realmName) {
+    public void deregisterWatch(String realmName) {
         if(realmName == null)
             return;
         int initialSize = watchKeys.size();
@@ -333,5 +257,7 @@ public class Resources {
             logger.error(String.format("Should remove %d watch(es) but removed %d for realm %s", watchkeysToRemove.size(), initialSize - watchKeys.size(), realmName));
     }
 
-
+    public static Cache<CacheKey, byte[]> getRealmsResources() {
+        return realmsResources;
+    }
 }

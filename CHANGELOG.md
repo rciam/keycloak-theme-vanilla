@@ -12,6 +12,7 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version. For e
 
 ### Fixed
 - Show Linkdin Identity Provider icon
+- Fix bug with add/delete realm event listeners
 
 ## [6.2.0] - 2026-06-12
 

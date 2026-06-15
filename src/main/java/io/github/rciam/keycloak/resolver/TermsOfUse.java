@@ -1,13 +1,6 @@
 package io.github.rciam.keycloak.resolver;
 
-import io.github.rciam.keycloak.resolver.stubs.cluster.RealmCreatedEvent;
-import io.github.rciam.keycloak.resolver.stubs.cluster.RealmDeletedEvent;
 import org.jboss.logging.Logger;
-import org.keycloak.cluster.ClusterEvent;
-import org.keycloak.cluster.ClusterProvider;
-import org.keycloak.models.KeycloakSession;
-import org.keycloak.models.RealmModel;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -30,19 +23,15 @@ public class TermsOfUse {
 
     private static final Logger logger = Logger.getLogger(TermsOfUse.class);
 
-    private static boolean REALMS_LISTENER_ADDED = false;
-    private static final String CREATE_TERMS_OF_USE = "CREATE_TERMS_OF_USE";
-    private static final String DELETE_TERMS_OF_USE = "DELETE_TERMS_OF_USE";
-    private static ClusterProvider cluster;
     private static boolean FOLDER_INITIALIZED = false;
     private static WatchService watchService;
     private static WatchKey watchKey;
     private static String defaultTermsOfUseHtml;
-    private static Map<String, String> realmsTermsOfUseHtml; //todo: maybe make this a synchronized map
+    private static Map<String, String> realmsTermsOfUseHtml = new HashMap<>(); //todo: maybe make this a synchronized map
 
 
-    public TermsOfUse(KeycloakSession session){
-        initializeStatics(session);
+    public TermsOfUse(){
+        initializeStatics();
     }
 
     public String getTermsOfUse(String realmName){
@@ -58,7 +47,7 @@ public class TermsOfUse {
         localSynchronizeRealmTermsOfUse(realmName, termsOfUseHtml);
     }
 
-    private void initializeStatics(KeycloakSession session){
+    private void initializeStatics(){
 
         if(!FOLDER_INITIALIZED) {
             try {
@@ -71,46 +60,6 @@ public class TermsOfUse {
 
         if(defaultTermsOfUseHtml == null)
             loadDefaultTermsOfUse();
-
-        if(realmsTermsOfUseHtml == null){
-            realmsTermsOfUseHtml = new HashMap<>();
-            session.realms().getRealmsStream().forEach(realmModel -> {
-                localSynchronizeRealmTermsOfUse(realmModel.getName());
-            });
-        }
-
-        if(cluster == null)
-            cluster = session.getProvider(ClusterProvider.class);
-
-        if(!REALMS_LISTENER_ADDED){
-            //register local listener
-            session.getKeycloakSessionFactory().register(event -> {
-                if(event instanceof RealmModel.RealmCreationEvent) {
-                    String realmName = ((RealmModel.RealmCreationEvent)event).getCreatedRealm().getName();
-                    localSynchronizeRealmTermsOfUse(realmName);
-                    cluster.notify(CREATE_TERMS_OF_USE, RealmCreatedEvent.create(realmName), true); //broadcast creation event to all other cluster nodes
-                }
-                else if(event instanceof RealmModel.RealmRemovedEvent) {
-                    String realmName = ((RealmModel.RealmRemovedEvent)event).getRealm().getName();
-                    String filePath = getTermsOfUseFile(realmName);
-                    File htmlFile = new File(filePath);
-                    if(htmlFile.exists())
-                        htmlFile.delete();
-                    cluster.notify(DELETE_TERMS_OF_USE, RealmDeletedEvent.create(realmName), true); //broadcast deletion event to all other cluster nodes
-                }
-            });
-            //register cluster listeners
-            cluster.registerListener(CREATE_TERMS_OF_USE, (ClusterEvent event) -> {
-                RealmCreatedEvent realmCreatedEvent = (RealmCreatedEvent) event;
-                localSynchronizeRealmTermsOfUse(realmCreatedEvent.getRealmName());
-            });
-            cluster.registerListener(DELETE_TERMS_OF_USE, (ClusterEvent event) -> {
-                RealmDeletedEvent realmDeletedEvent = (RealmDeletedEvent) event;
-                localSynchronizeRealmTermsOfUse(realmDeletedEvent.getRealmName());
-            });
-
-            REALMS_LISTENER_ADDED = true;
-        }
 
         if(watchKey == null) {
             Runnable runnable = () -> {
@@ -156,11 +105,11 @@ public class TermsOfUse {
         return String.format("%s/%s/%s", Commons.getBasePath(), Commons.THEME_WORKING_FOLDER, Commons.TERMS_OF_USE_FOLDER);
     }
 
-    private String getTermsOfUseFile(String realmName){
+    public String getTermsOfUseFile(String realmName){
         return String.format("%s/%s/%s/%s.html", Commons.getBasePath(), Commons.THEME_WORKING_FOLDER, Commons.TERMS_OF_USE_FOLDER, realmName);
     }
 
-    private void localSynchronizeRealmTermsOfUse(String realmName){
+    public void localSynchronizeRealmTermsOfUse(String realmName){
         localSynchronizeRealmTermsOfUse(realmName, null);
     }
 
