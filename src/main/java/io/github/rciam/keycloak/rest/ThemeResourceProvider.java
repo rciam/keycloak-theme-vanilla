@@ -92,6 +92,8 @@ public class ThemeResourceProvider implements RealmResourceProvider {
     private static final Logger logger = Logger.getLogger(ThemeResourceProvider.class);
     private static final String KEYCLOAK_REMEMBER_IDPS = "KEYCLOAK_REMEMBER_IDPS_";
     private static final String ICON_THEME_PREFIX = "kcLogoIdP-";
+    private static final String LINKEDIN_IDP_PROVIDER_ID = "linkedin-openid-connect";
+    private static final String LINKEDIN_IDP_FA = "linkedin";
     private static final String IDP_THEME_CONFIG_PREFIX = "kcTheme-";
     private static final String ALIAS_IN = "aliasIn";
 
@@ -322,7 +324,7 @@ public class ThemeResourceProvider implements RealmResourceProvider {
         String iconClass = themeProperties.getProperty(ICON_THEME_PREFIX + identityProvider.getAlias());
 
         if (iconClass == null) {
-            return themeProperties.getProperty(ICON_THEME_PREFIX + identityProvider.getProviderId());
+            return themeProperties.getProperty(ICON_THEME_PREFIX + (LINKEDIN_IDP_PROVIDER_ID.equals(identityProvider.getProviderId()) ? LINKEDIN_IDP_FA : identityProvider.getProviderId()));
         }
 
         return iconClass;
