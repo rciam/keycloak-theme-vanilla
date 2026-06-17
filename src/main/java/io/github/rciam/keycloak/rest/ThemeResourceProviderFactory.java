@@ -60,9 +60,9 @@ public class ThemeResourceProviderFactory implements RealmResourceProviderFactor
 
     @Override
     public void postInit(KeycloakSessionFactory factory) {
-        ThemeConfig themeConfig = new ThemeConfig();
-        TermsOfUse termsOfUse = new TermsOfUse();
-        Resources resources = new Resources();
+        themeConfig = new ThemeConfig();
+        termsOfUse = new TermsOfUse();
+        resources = new Resources();
         KeycloakModelUtils.runJobInTransaction(factory, (KeycloakSession session) -> {
             session.realms().getRealmsStream().forEach(realmModel -> {
                 termsOfUse.localSynchronizeRealmTermsOfUse(realmModel.getName());
@@ -78,6 +78,7 @@ public class ThemeResourceProviderFactory implements RealmResourceProviderFactor
                 RealmModel.RealmPostCreateEvent createEvent =
                         (RealmModel.RealmPostCreateEvent) event;
                 String realmName = createEvent.getCreatedRealm().getName();
+                logger.infof("Theme configuration for creating realm with name %s",realmName);
                 termsOfUse.localSynchronizeRealmTermsOfUse(realmName);
 
                 //create realm folder (if not exists)
@@ -97,6 +98,7 @@ public class ThemeResourceProviderFactory implements RealmResourceProviderFactor
                         (RealmModel.RealmRemovedEvent) event;
 
                 String realmName = removeEvent.getRealm().getName();
+                logger.infof("Theme configuration for deleting realm with name %s",realmName);
                 String filePath = termsOfUse.getTermsOfUseFile(realmName);
                 File htmlFile = new File(filePath);
                 if(htmlFile.exists())
