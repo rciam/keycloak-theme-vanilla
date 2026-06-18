@@ -6,7 +6,7 @@
 
     <groupId>org.rciam.keycloak</groupId>
     <artifactId>keycloak-theme-vanilla</artifactId>
-    <version>6.2.2</version>
+    <version>6.2.3</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -71,6 +71,12 @@
             <artifactId>infinispan-core</artifactId>
             <version>${infinispan.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-model-infinispan</artifactId>
+            <version>${keycloak.version}</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
