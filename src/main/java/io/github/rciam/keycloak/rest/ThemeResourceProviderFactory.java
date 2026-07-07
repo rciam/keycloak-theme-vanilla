@@ -31,6 +31,7 @@ import org.keycloak.models.RealmModel;
 import org.keycloak.models.cache.infinispan.events.RealmRemovedEvent;
 import org.keycloak.models.cache.infinispan.events.RealmUpdatedEvent;
 import org.keycloak.models.utils.KeycloakModelUtils;
+import org.keycloak.models.utils.PostMigrationEvent;
 import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.services.resource.RealmResourceProviderFactory;
 
@@ -71,24 +72,31 @@ public class ThemeResourceProviderFactory implements RealmResourceProviderFactor
         themeConfig = new ThemeConfig();
         termsOfUse = new TermsOfUse();
         resources = new Resources();
-        KeycloakModelUtils.runJobInTransaction(factory, (KeycloakSession session) -> {
-            cluster = session.getProvider(ClusterProvider.class);
-            session.realms().getRealmsStream().forEach(realmModel -> {
-                termsOfUse.localSynchronizeRealmTermsOfUse(realmModel.getName());
-                themeConfig.localSynchronizeConfig(realmModel.getName());
-            });
-        });
 
-        cluster.registerListener(THEME_REALM_CREATED, (ClusterEvent clusterEvent) -> {
-            if (clusterEvent instanceof RealmUpdatedEvent realmEvent) {
-                logger.infof("Event for theme configuration due to create realm with name %s",realmEvent.getId());
-                createRealmAction(realmEvent.getId());
-            }
-        });
-        cluster.registerListener(THEME_REALM_DELETED, (ClusterEvent clusterEvent) -> {
-            if (clusterEvent instanceof RealmRemovedEvent realmEvent) {
-                logger.infof("Event for theme configuration due to delete realm with name %s",realmEvent.getId());
-                deleteRealmAction(realmEvent.getId());
+        // intialiasation of theme configuration when  Keycloak has started
+        factory.register(event -> {
+            if (event instanceof PostMigrationEvent) {
+                logger.info("Initialize rciam theme configuration");
+                KeycloakModelUtils.runJobInTransaction(factory, (KeycloakSession session) -> {
+                    cluster = session.getProvider(ClusterProvider.class);
+                    session.realms().getRealmsStream().forEach(realmModel -> {
+                        termsOfUse.localSynchronizeRealmTermsOfUse(realmModel.getName());
+                        themeConfig.localSynchronizeConfig(realmModel.getName());
+                    });
+                });
+
+                cluster.registerListener(THEME_REALM_CREATED, (ClusterEvent clusterEvent) -> {
+                    if (clusterEvent instanceof RealmUpdatedEvent realmEvent) {
+                        logger.infof("Event for theme configuration due to create realm with name %s", realmEvent.getId());
+                        createRealmAction(realmEvent.getId());
+                    }
+                });
+                cluster.registerListener(THEME_REALM_DELETED, (ClusterEvent clusterEvent) -> {
+                    if (clusterEvent instanceof RealmRemovedEvent realmEvent) {
+                        logger.infof("Event for theme configuration due to delete realm with name %s", realmEvent.getId());
+                        deleteRealmAction(realmEvent.getId());
+                    }
+                });
             }
         });
 
