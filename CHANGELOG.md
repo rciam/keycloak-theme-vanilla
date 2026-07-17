@@ -8,45 +8,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 For Keycloak upstream changelog please see https://www.keycloak.org/docs/latest/release_notes/index.html.
 Full Keycloak upstream jira issue can be shown if filtered by Fix version. For example [Keycloak jira issue for 15.0.2 version](https://issues.redhat.com/browse/KEYCLOAK-19161?jql=project%20%3D%20keycloak%20and%20fixVersion%20%3D%2015.0.2)
 
+## [6.2.5] - 2026-07-17
+
+### Fixed
+
+- Hide Resources page when User-Managed Access is disabled in Realm settings
+
 ## [6.2.4] - 2026-07-07
 
 ### Fixed
+
 - Fix problem restarting Keycloak
 
 ## [6.2.3] - 2026-06-18
 
 ### Fixed
+
 - Notify other node for realm creation/ delete
 
 ## [6.2.2] - 2026-06-17
 
 ### Fixed
+
 - Fix bug in Configuration initialization
 
 ## [6.2.1] - 2026-06-15
 
 ### Fixed
+
 - Show Linkdin Identity Provider icon
 - Fix bug with add/delete realm event listeners
 
 ## [6.2.0] - 2026-06-12
 
 ### Changed
+
 - Support for Keycloak version 26.6.x
 
 ### Fixed
+
 - Fix bug with delete realm
 
 ## [6.1.2] - 2026-05-08
 
-### Fixed 
+### Fixed
 
-- Bug in template.ftl 
-
+- Bug in template.ftl
 
 ## [6.1.1] - 2026-04-30
 
-### Fixed 
+### Fixed
 
 - Scroll Issue in Acknowledgment Modal
 - Alignmnent of Idps in login page
@@ -56,7 +67,6 @@ Full Keycloak upstream jira issue can be shown if filtered by Fix version. For e
 ### Added
 
 - Support for cookie banner in Keycloak
-
 
 ## [6.0.12] - 2026-03-18
 

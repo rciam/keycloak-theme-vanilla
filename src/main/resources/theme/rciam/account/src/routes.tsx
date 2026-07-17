@@ -66,7 +66,7 @@ export const RootRoute: NavRouteObject = {
     LinkedAccountsRoute,
     SigningInRoute,
     ApplicationsRoute,
-    ResourcesRoute,
+    ...(environment.features.isMyResourcesEnabled ? [ResourcesRoute] : []),
     ...(environment.features.isOid4VciEnabled ? [Oid4VciRoute] : []),
   ],
 };
