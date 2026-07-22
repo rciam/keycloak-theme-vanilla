@@ -48,7 +48,6 @@ public class ThemeResourceProviderFactory implements RealmResourceProviderFactor
     private static ThemeConfig themeConfig;
     private static TermsOfUse termsOfUse;
     private static Resources resources;
-    private static ClusterProvider cluster;
     private static final String THEME_REALM_CREATED = "THEME_REALM_CREATED";
     private static final String THEME_REALM_DELETED = "THEME_REALM_DELETED";
 
@@ -78,24 +77,26 @@ public class ThemeResourceProviderFactory implements RealmResourceProviderFactor
             if (event instanceof PostMigrationEvent) {
                 logger.info("Initialize rciam theme configuration");
                 KeycloakModelUtils.runJobInTransaction(factory, (KeycloakSession session) -> {
-                    cluster = session.getProvider(ClusterProvider.class);
+                    // Fetch cluster provider dynamically for this transaction
+                    ClusterProvider clusterProvider = session.getProvider(ClusterProvider.class);
                     session.realms().getRealmsStream().forEach(realmModel -> {
                         termsOfUse.localSynchronizeRealmTermsOfUse(realmModel.getName());
                         themeConfig.localSynchronizeConfig(realmModel.getName());
                     });
-                });
 
-                cluster.registerListener(THEME_REALM_CREATED, (ClusterEvent clusterEvent) -> {
-                    if (clusterEvent instanceof RealmUpdatedEvent realmEvent) {
-                        logger.infof("Event for theme configuration due to create realm with name %s", realmEvent.getId());
-                        createRealmAction(realmEvent.getId());
-                    }
-                });
-                cluster.registerListener(THEME_REALM_DELETED, (ClusterEvent clusterEvent) -> {
-                    if (clusterEvent instanceof RealmRemovedEvent realmEvent) {
-                        logger.infof("Event for theme configuration due to delete realm with name %s", realmEvent.getId());
-                        deleteRealmAction(realmEvent.getId());
-                    }
+                    // Register listeners using the local clusterProvider instance
+                    clusterProvider.registerListener(THEME_REALM_CREATED, (ClusterEvent clusterEvent) -> {
+                        if (clusterEvent instanceof RealmUpdatedEvent realmEvent) {
+                            logger.infof("Event for theme configuration due to create realm with name %s", realmEvent.getId());
+                            createRealmAction(realmEvent.getId());
+                        }
+                    });
+                    clusterProvider.registerListener(THEME_REALM_DELETED, (ClusterEvent clusterEvent) -> {
+                        if (clusterEvent instanceof RealmRemovedEvent realmEvent) {
+                            logger.infof("Event for theme configuration due to delete realm with name %s", realmEvent.getId());
+                            deleteRealmAction(realmEvent.getId());
+                        }
+                    });
                 });
             }
         });
@@ -106,11 +107,13 @@ public class ThemeResourceProviderFactory implements RealmResourceProviderFactor
                 String realmName = createEvent.getCreatedRealm().getName();
                 logger.infof("Theme configuration for creating realm with name %s",realmName);
                 createRealmAction(realmName);
+                ClusterProvider cluster = createEvent.getKeycloakSession().getProvider(ClusterProvider.class);
                 cluster.notify(THEME_REALM_CREATED,RealmUpdatedEvent.create(realmName,realmName), true);
             } else if (event instanceof RealmModel.RealmRemovedEvent removeEvent) {
                 String realmName = removeEvent.getRealm().getName();
                 logger.infof("Theme configuration for deleting realm with name %s",realmName);
                 deleteRealmAction(realmName);
+                ClusterProvider cluster = removeEvent.getKeycloakSession().getProvider(ClusterProvider.class);
                 cluster.notify(THEME_REALM_DELETED,RealmRemovedEvent.create(realmName,realmName), true);
             }
         });
