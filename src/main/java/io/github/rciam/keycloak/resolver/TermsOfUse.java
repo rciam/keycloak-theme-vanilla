@@ -166,12 +166,13 @@ public class TermsOfUse {
      */
     public static void shutdownAllWatchersAndListeners() {
         logger.info("Shutting down the watch service of the theme's terms of use folder");
-        watchKey.cancel();
-        try {
-            watchService.close();
-        }
-        catch(IOException ex){
-            logger.info("Could not shutdown the watch service of the theme's terms of use folder");
+        if(watchKey != null) {
+            watchKey.cancel();
+            try {
+                watchService.close();
+            } catch (IOException ex) {
+                logger.info("Could not shutdown the watch service of the theme's terms of use folder");
+            }
         }
     }
 

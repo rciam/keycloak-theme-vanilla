@@ -135,7 +135,7 @@ public class Resources {
                                     if(data != null && data.length < MAX_CACHE_FILE_SIZE_BYTES)
                                         realmsResources.put(new CacheKey(realmAndResourceName[0], realmAndResourceName[1]), data);
                                 } catch (InaccessibleFileException | InvalidPathException e) {
-                                    logger.error(e.getMessage());
+                                    logger.warn(e.getMessage());
                                 }
                             }
 
@@ -147,7 +147,7 @@ public class Resources {
                                     if(data != null && data.length < MAX_CACHE_FILE_SIZE_BYTES)
                                         realmsResources.put(new CacheKey(realmAndResourceName[0], realmAndResourceName[1]), data);
                                 } catch (InaccessibleFileException | InvalidPathException e) {
-                                    logger.error(e.getMessage());
+                                    logger.warn(e.getMessage());
                                 }
                             }
 
@@ -157,7 +157,7 @@ public class Resources {
                                     String[] realmAndResourceName = getRealmAndResourceName(child);
                                     realmsResources.evict(new CacheKey(realmAndResourceName[0], realmAndResourceName[1]));
                                 } catch (InvalidPathException e) {
-                                    logger.error(e.getMessage());
+                                    logger.warn(e.getMessage());
                                 }
                             }
 
@@ -253,8 +253,6 @@ public class Resources {
             watchKey.cancel();
             watchKeys.remove(watchKey);
         }
-        if(watchKeys.size() + watchkeysToRemove.size() == initialSize)
-            logger.error(String.format("Should remove %d watch(es) but removed %d for realm %s", watchkeysToRemove.size(), initialSize - watchKeys.size(), realmName));
     }
 
     public static Cache<CacheKey, byte[]> getRealmsResources() {
