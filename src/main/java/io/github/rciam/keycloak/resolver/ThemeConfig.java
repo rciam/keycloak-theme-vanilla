@@ -64,6 +64,7 @@ public class ThemeConfig {
 
     private void initializeStatics() {
 
+        logger.info("Initializing Theme Config");
         if(!FOLDER_INITIALIZED) {
             try {
                 Files.createDirectories(Paths.get(getThemeConfigFolder()));

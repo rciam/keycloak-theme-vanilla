@@ -25,6 +25,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.Config.Scope;
 import org.keycloak.cluster.ClusterEvent;
 import org.keycloak.cluster.ClusterProvider;
+import org.keycloak.connections.jpa.JpaConnectionProvider;
 import org.keycloak.models.KeycloakSession;
 import org.keycloak.models.KeycloakSessionFactory;
 import org.keycloak.models.RealmModel;
@@ -32,13 +33,14 @@ import org.keycloak.models.cache.infinispan.events.RealmRemovedEvent;
 import org.keycloak.models.cache.infinispan.events.RealmUpdatedEvent;
 import org.keycloak.models.utils.KeycloakModelUtils;
 import org.keycloak.models.utils.PostMigrationEvent;
+import org.keycloak.provider.Provider;
 import org.keycloak.services.resource.RealmResourceProvider;
 import org.keycloak.services.resource.RealmResourceProviderFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 public class ThemeResourceProviderFactory implements RealmResourceProviderFactory {
 
@@ -145,8 +147,7 @@ public class ThemeResourceProviderFactory implements RealmResourceProviderFactor
         //remove the file listener
         resources.deregisterWatch(realmName);
         //clear the cache of this realm
-        resources.getRealmsResources().keySet().stream().filter(cacheKey -> realmName.equals(cacheKey.getRealmName())).collect(Collectors.toList())
-                .stream().forEach(cacheKey -> resources.getRealmsResources().evict(cacheKey));
+        resources.evictRealmResources(realmName);
         //remove the whole dir contents
         Commons.deleteFolderAndContents(new File(resources.getResourcesFolderPathOfRealm(realmName)));
 
@@ -161,6 +162,12 @@ public class ThemeResourceProviderFactory implements RealmResourceProviderFactor
     public void close() {
         TermsOfUse.shutdownAllWatchersAndListeners();
         ThemeConfig.shutdownAllWatchersAndListeners();
+    }
+
+    @Override
+    public Set<Class<? extends Provider>> dependsOn() {
+        // This is to avoid a race condition when JPA is loaded after this factory
+        return Set.of(JpaConnectionProvider.class);
     }
 
 }

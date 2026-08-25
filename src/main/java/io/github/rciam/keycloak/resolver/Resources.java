@@ -3,12 +3,6 @@ package io.github.rciam.keycloak.resolver;
 import io.github.rciam.keycloak.exception.InaccessibleFileException;
 import io.github.rciam.keycloak.exception.InvalidPathException;
 import io.github.rciam.keycloak.resolver.stubs.cache.CacheKey;
-import org.infinispan.Cache;
-import org.infinispan.commons.api.CacheContainerAdmin;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.global.GlobalConfigurationBuilder;
-import org.infinispan.manager.DefaultCacheManager;
 import org.jboss.logging.Logger;
 
 import java.io.File;
@@ -21,7 +15,9 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.util.AbstractMap;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,7 +31,6 @@ public class Resources {
 
     private static final Logger logger = Logger.getLogger(Resources.class);
 
-    private static String CACHE_NAME = "realm-resources";
     private static long MAX_RESOURCES_IN_CACHE = 50;
     private static Long MAX_CACHE_FILE_SIZE_BYTES = 1048576L; //1MB
     private static boolean FOLDER_INITIALIZED = false;
@@ -43,7 +38,7 @@ public class Resources {
     private static WatchService watchService;
     private static Map<WatchKey, Map.Entry<Path, String>> watchKeys;
 
-    private static Cache<CacheKey, byte[]> realmsResources;
+    private static Map<CacheKey, byte[]> realmsResources;
 
     public Resources(){
         initializeStatics();
@@ -64,18 +59,9 @@ public class Resources {
         return payload;
     }
 
-    /**
-     * Does not broadcast, because it's not safe to send any configuration or code through unsecure
-     * plaintext (serialized) event messages and materialize on the other nodes
-    */
-    public void setResource(CacheKey cacheKey, byte[] resource) {
-        saveFilesystemResource(cacheKey.getRealmName(), cacheKey.getResourceName(), resource);
-        if(resource != null && resource.length < MAX_CACHE_FILE_SIZE_BYTES)
-            realmsResources.put(cacheKey, resource);
-    }
-
     private void initializeStatics() {
 
+        logger.info("Initializing Resources of theme");
         if(!FOLDER_INITIALIZED) {
             try {
                 Files.createDirectories(Paths.get(getBaseResourcesFolderPath()));
@@ -86,15 +72,16 @@ public class Resources {
         }
 
         if(realmsResources == null){
-            GlobalConfigurationBuilder globalConfigBuilder = new GlobalConfigurationBuilder();
-            DefaultCacheManager cacheManager = new DefaultCacheManager(globalConfigBuilder.nonClusteredDefault().build());
-            ConfigurationBuilder cacheConfigBuilder = new ConfigurationBuilder();
-            Configuration cacheConfiguration = cacheConfigBuilder
-                    .simpleCache(true)
-                    .memory()
-                    .maxCount(MAX_RESOURCES_IN_CACHE)
-                    .build();
-            realmsResources = cacheManager.administration().withFlags(CacheContainerAdmin.AdminFlag.VOLATILE).getOrCreateCache(CACHE_NAME, cacheConfiguration);
+            // Create a thread-safe LRU Map natively in Java
+            int initialCapacity = (int) MAX_RESOURCES_IN_CACHE + 1;
+            realmsResources = Collections.synchronizedMap(
+                    new LinkedHashMap<CacheKey, byte[]>(initialCapacity, 0.75F, true) {
+                        @Override
+                        protected boolean removeEldestEntry(Map.Entry<CacheKey, byte[]> eldest) {
+                            return size() > MAX_RESOURCES_IN_CACHE;
+                        }
+                    }
+            );
         }
 
         if(watchService == null) {
@@ -121,25 +108,11 @@ public class Resources {
                             Path name = ev.context();
                             Path child = dir.resolve(name);
 
-//                            System.out.format("%s: %s\n", event.kind().name(), child);
-
                             if (Files.isDirectory(child, NOFOLLOW_LINKS)) //if it is a directory, do not process the event
                                 continue;
 
                             //not a directory -> it's a file, so process the event
-                            if (event.kind() == ENTRY_CREATE) {
-                                //read the resource and add it in the cache
-                                try {
-                                    String[] realmAndResourceName = getRealmAndResourceName(child);
-                                    byte[] data = readFilesystemResource(child.toString());
-                                    if(data != null && data.length < MAX_CACHE_FILE_SIZE_BYTES)
-                                        realmsResources.put(new CacheKey(realmAndResourceName[0], realmAndResourceName[1]), data);
-                                } catch (InaccessibleFileException | InvalidPathException e) {
-                                    logger.warn(e.getMessage());
-                                }
-                            }
-
-                            if(event.kind() == ENTRY_MODIFY) {
+                            if (event.kind() == ENTRY_CREATE || event.kind() == ENTRY_MODIFY) {
                                 //read the resource and add it in the cache
                                 try {
                                     String[] realmAndResourceName = getRealmAndResourceName(child);
@@ -155,7 +128,8 @@ public class Resources {
                                 //remove the resource from the cache
                                 try {
                                     String[] realmAndResourceName = getRealmAndResourceName(child);
-                                    realmsResources.evict(new CacheKey(realmAndResourceName[0], realmAndResourceName[1]));
+                                    // Changed from .evict() to standard Map .remove()
+                                    realmsResources.remove(new CacheKey(realmAndResourceName[0], realmAndResourceName[1]));
                                 } catch (InvalidPathException e) {
                                     logger.warn(e.getMessage());
                                 }
@@ -163,7 +137,6 @@ public class Resources {
 
                         }
 
-                        // reset key and remove from set if directory no longer accessible
                         boolean valid = key.reset();
                         if (!valid) {
                             watchKeys.remove(key);
@@ -193,7 +166,6 @@ public class Resources {
         return String.format("%s/%s/%s/%s/%s", Commons.getBasePath(), Commons.THEME_WORKING_FOLDER, Commons.RESOURCES_FOLDER, realmName, resourceName);
     }
 
-
     public void createRealmResourcesFolder(String realmName){
         new File(getResourcesFolderPathOfRealm(realmName)).mkdirs();
     }
@@ -209,7 +181,6 @@ public class Resources {
         }
     }
 
-
     private byte[] readFilesystemResource(String path) throws InaccessibleFileException {
         try {
             return Commons.readRawFile(path);
@@ -219,17 +190,15 @@ public class Resources {
         }
     }
 
-
     private String[] getRealmAndResourceName(Path path) throws InvalidPathException {
         String subpath = path.toString().replace(getBaseResourcesFolderPath(),"");
         subpath = subpath.startsWith(File.separator) ? subpath.substring(1) : subpath;
         subpath = subpath.endsWith(File.separator) ? subpath.substring(0, subpath.length()-1) : subpath;
         String [] splits = subpath.split("/");
-        if(splits.length != 2) // should never happen, means that the folder has depth >1 from basePath
+        if (splits.length != 2) // should never happen, means that the folder has depth >1 from basePath
             throw new InvalidPathException(String.format("Should have a path of %s/<REALM_NAME>/fileXYZ , got: %s", getBaseResourcesFolderPath(), path.toString()));
         return splits;
     }
-
 
     @SuppressWarnings("unchecked")
     static <T> WatchEvent<T> cast(WatchEvent<?> event) {
@@ -244,7 +213,6 @@ public class Resources {
     public void deregisterWatch(String realmName) {
         if(realmName == null)
             return;
-        int initialSize = watchKeys.size();
         List<WatchKey> watchkeysToRemove = watchKeys.entrySet().stream()
                 .filter(realmAndPathEntry -> realmName.equals(realmAndPathEntry.getValue().getValue()))
                 .map(realmAndPathEntry -> realmAndPathEntry.getKey())
@@ -255,7 +223,15 @@ public class Resources {
         }
     }
 
-    public static Cache<CacheKey, byte[]> getRealmsResources() {
+    public static Map<CacheKey, byte[]> getRealmsResources() {
         return realmsResources;
+    }
+
+    public void evictRealmResources(String realmName) {
+        if (realmName == null || realmsResources == null) return;
+        // Safely remove all keys matching the realm name
+        synchronized (realmsResources) {
+            realmsResources.keySet().removeIf(key -> realmName.equals(key.getRealmName()));
+        }
     }
 }

@@ -49,6 +49,7 @@ public class TermsOfUse {
 
     private void initializeStatics(){
 
+        logger.info("Initializing Terms of Use");
         if(!FOLDER_INITIALIZED) {
             try {
                 Files.createDirectories(Paths.get(getTermsOfUseFolder()));
