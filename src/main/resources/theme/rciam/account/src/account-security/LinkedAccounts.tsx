@@ -1,12 +1,16 @@
-import { Page, EmptyRow, usePromise, getLinkedAccounts } from "@keycloak/keycloak-account-ui";
-import type {
-  LinkedAccountRepresentation,
+import {
+  Page,
+  EmptyRow,
+  usePromise,
+  getLinkedAccounts,
 } from "@keycloak/keycloak-account-ui";
+import type { LinkedAccountRepresentation } from "@keycloak/keycloak-account-ui";
 import { useEnvironment } from "@keycloak/keycloak-account-ui";
 import { DataList, Stack, StackItem, Title } from "@patternfly/react-core";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-
+import { useAlerts } from "@keycloak/keycloak-ui-shared";
+import { AlertVariant } from "@patternfly/react-core";
 import { LinkedAccountsToolbar } from "./LinkedAccountsToolbar";
 import { AccountRow } from "./AccountRow";
 import { AccountEnvironmentExtended } from "../environment";
@@ -22,6 +26,7 @@ type LinkedAccountQueryParams = PaginationParams & {
 export const LinkedAccounts = () => {
   const { t } = useTranslation();
   const context = useEnvironment<AccountEnvironmentExtended>();
+  const { addAlert } = useAlerts();
   const [linkedAccounts, setLinkedAccounts] = useState<
     LinkedAccountRepresentation[]
   >([]);
@@ -47,21 +52,47 @@ export const LinkedAccounts = () => {
 
   const [key, setKey] = useState(0);
   const refresh = () => setKey((k) => k + 1);
+  const canManageLinks =
+    context.keycloak.resourceAccess?.account?.roles?.includes(
+      "manage-account-links",
+    ) ?? false;
 
   usePromise(
-    (signal) => getLinkedAccounts({ signal, context }, paramsUnlinked),
-    setUnlinkedAccounts,
-    [paramsUnlinked, key],
-  );
+    async (signal) => {
+      try {
+        return await getLinkedAccounts({ signal, context }, paramsLinked);
+      } catch {
+        if (signal.aborted) {
+          return [];
+        }
+        console.log("this iss");
+        addAlert(t("failedToFetchLinkedAccounts"), AlertVariant.danger);
 
-  usePromise(
-    (signal) => getLinkedAccounts({ signal, context }, paramsLinked),
+        return [];
+      }
+    },
     setLinkedAccounts,
     [paramsLinked, key],
   );
 
-
-  const canManageLinks = context?.keycloak?.resourceAccess?.account?.roles?.includes("manage-account-links");
+  usePromise(
+    async (signal) => {
+      if (!canManageLinks) {
+        return [];
+      }
+      try {
+        return await getLinkedAccounts({ signal, context }, paramsUnlinked);
+      } catch {
+        if (signal.aborted) {
+          return [];
+        }
+        addAlert(t("failedToFetchUnlinkedAccounts"), AlertVariant.danger);
+        return [];
+      }
+    },
+    setUnlinkedAccounts,
+    [canManageLinks, paramsUnlinked, key],
+  );
 
   return (
     <Page
@@ -108,6 +139,7 @@ export const LinkedAccounts = () => {
                       key={account.providerName}
                       account={account}
                       isLinked
+                      canManageLinks={canManageLinks}
                       refresh={refresh}
                     />
                   ),
@@ -164,6 +196,7 @@ export const LinkedAccounts = () => {
                       <AccountRow
                         key={account.providerName}
                         account={account}
+                        canManageLinks={canManageLinks}
                         refresh={refresh}
                       />
                     ),
