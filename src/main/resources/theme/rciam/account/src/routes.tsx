@@ -45,10 +45,21 @@ export const ResourcesRoute: NavRouteObject = {
   element: <Resources />,
 };
 
-export const PersonalInfoRoute: IndexRouteObject & NavRouteObject = {
+export const PersonalInfoIndexRoute: IndexRouteObject & {
+  handle?: {
+    hideFromNav?: boolean;
+  };
+} = {
   index: true,
   element: <PersonalInfo />,
-  path: "",
+  handle: {
+    hideFromNav: true,
+  },
+};
+
+export const PersonalInfoRoute: NavRouteObject = {
+  path: "personal-info",
+  element: <PersonalInfo />,
 };
 
 export const Oid4VciRoute: NavRouteObject = {
@@ -57,11 +68,12 @@ export const Oid4VciRoute: NavRouteObject = {
 };
 
 export const RootRoute: NavRouteObject = {
-  path: decodeURIComponent(new URL(environment.baseUrl).pathname),
+  path: "/",
   element: <App />,
   errorElement: <>Error</>,
   children: [
     PersonalInfoRoute,
+    PersonalInfoIndexRoute,
     DeviceActivityRoute,
     LinkedAccountsRoute,
     SigningInRoute,
