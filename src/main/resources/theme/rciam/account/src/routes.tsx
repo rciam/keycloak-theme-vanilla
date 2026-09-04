@@ -21,17 +21,17 @@ export type NavRouteObject = RouteObject & {
 };
 
 export const DeviceActivityRoute: NavRouteObject = {
-  path: "account-security/device-activity",
+  path: "security/device-activity",
   element: <DeviceActivity />,
 };
 
 export const LinkedAccountsRoute: NavRouteObject = {
-  path: "account-security/linked-accounts",
+  path: "security/linked-accounts",
   element: <LinkedAccounts />,
 };
 
 export const SigningInRoute: NavRouteObject = {
-  path: "account-security/signing-in",
+  path: "security/signing-in",
   element: <SigningIn />,
 };
 
